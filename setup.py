@@ -5,11 +5,11 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="ukebook",
+    name="udn-songbook",
     version="0.1",
     author="Stuart Sears",
     author_email="stuart@sjsears.com",
-    description="Songbook  wrapper for use with ukedown",
+    description="Songbook wrapper for use with ukedown",
     long_description=long_description,
     long_description_type="text/markdown",
     url="https://github.com/lanky/ukedown",
