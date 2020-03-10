@@ -4,7 +4,7 @@
 import os
 from glob import glob
 
-from jinja2 import Environement, FilesystemLoader
+from jinja2 import Environment, FileSystemLoader
 
 from . import song
 
@@ -36,7 +36,7 @@ class SongBook(object):
         for src in self.inputs:
             rp = os.path.realpath(src)
             if os.path.isfile(rp) and fnmatch.fnmatch(os.path.basename(src), "*.udn"):
-                self.contents.append(song.Song(s))
+                self.contents.append(song.Song(rp))
             elif os.path.isdir(rp):
                 for rt, dirs, files in os.walk(rp):
                     flist = fnmatch.filter(
@@ -55,6 +55,17 @@ class SongBook(object):
         for entry in self.contents:
             k = "{0.title}-{0.artist}".format(entry).lower().replace(" ", "_")
             self.index[k] = entry
+
+    def add(self, songfile):
+        """Add a new song to the book
+
+        Adds a new song object to the current songbook
+
+        Args:
+            songfile (str): path to songfile
+        """
+        pass
+
 
     def update(self, inputs):
         """
