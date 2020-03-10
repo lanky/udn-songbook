@@ -50,6 +50,7 @@ class Song(object):
             tags(list):      tags to apply to this song (tentative, tested etc)
 
         """
+        self._checksum = "None"
 
         if os.path.exists(src):
             self.__load(src)
@@ -73,7 +74,6 @@ class Song(object):
         if self._filename is None:
             self._filename = ("{0.title}_-_{0.artist}".format(self)).lower()
 
-        self._checksum = "None"
 
     def __load(self, sourcefile):
         """
@@ -87,6 +87,8 @@ class Song(object):
                 self._checksum = shasum.hexdigest()
                 print(self.checksum)
                 self.load_time = datetime.datetime.now()
+                self.mod_time = os.path.getmtime(sourcefile)
+                self.fsize = os.path.getsize(sourcefile)
 
         except (IOError, OSError) as E:
             print("Unable to open input file {0.filename} ({0.strerror}".format(E))
