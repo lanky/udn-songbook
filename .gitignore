@@ -5,4 +5,6 @@
 *.html
 *.svg
 *.log
-
+build
+dist
+*.egg-info
