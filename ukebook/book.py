@@ -8,6 +8,7 @@ from jinja2 import Environement, FilesystemLoader
 
 from . import song
 
+
 class SongBook(object):
     """
     wrapper around a list of songs with additional context
@@ -34,11 +35,13 @@ class SongBook(object):
         """
         for src in self.inputs:
             rp = os.path.realpath(src)
-            if os.path.isfile(rp) and fnmatch.fnmatch(os.path.basename(src), '*.udn'):
+            if os.path.isfile(rp) and fnmatch.fnmatch(os.path.basename(src), "*.udn"):
                 self.contents.append(song.Song(s))
             elif os.path.isdir(rp):
                 for rt, dirs, files in os.walk(rp):
-                    flist = fnmatch.filter([ os.path.join(rt, f) for f in files ], '*.udn')
+                    flist = fnmatch.filter(
+                        [os.path.join(rt, f) for f in files], "*.udn"
+                    )
                     self.contents.extend([song.Song(f) for f in flist])
             else:
                 print("cannot load from non-file/dir {}".format(src))
@@ -50,7 +53,7 @@ class SongBook(object):
         reduce contents list to unique entries, indexed on title - artist
         """
         for entry in self.contents:
-            k = '{0.title}-{0.artist}'.format(entry).lower().replace(' ', '_')
+            k = "{0.title}-{0.artist}".format(entry).lower().replace(" ", "_")
             self.index[k] = entry
 
     def update(self, inputs):
@@ -72,9 +75,6 @@ class SongBook(object):
         # this permits us to change metadata (title etc) and have the book
         # reordered appropriately.
         pass
-
-
-
 
     def render(self, template):
         # renders the songook to a file or files.

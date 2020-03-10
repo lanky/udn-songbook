@@ -1,1 +1,1 @@
-all = [ 'song', 'book' ]
+all = ["song", "book"]

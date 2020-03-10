@@ -14,6 +14,7 @@ import datetime
 
 from bs4 import BeautifulSoup as bs
 
+
 class Song(object):
     """
     a Song object represents a song with associated methods
@@ -38,7 +39,7 @@ class Song(object):
         Kwargs:
             anything can be customised, most attributes/properties are
             auto-generated, but we sometimes need to override them
-            The following are common properties - '*' indicates optional
+            Those listed below are commonly-used properties.
             These can also be parsed out of the songsheet itself, using metadata markup
 
             title(str):      Song Title
@@ -57,7 +58,6 @@ class Song(object):
             # presume we've been given content
             self._markup = src
 
-
         # does nothing yet
         self._filename = src
         self.__parse(markup=self._markup)
@@ -67,23 +67,23 @@ class Song(object):
         self._tags = set([])
 
         # update with any parameters...
-        for key, val in  kwargs.items():
+        for key, val in kwargs.items():
             setattr(self, key, val)
 
         if self._filename is None:
-            self._filename = ('{0.title}_-_{0.artist}'.format(self)).lower()
+            self._filename = ("{0.title}_-_{0.artist}".format(self)).lower()
 
-        self._checksum = 'None'
+        self._checksum = "None"
 
     def __load(self, sourcefile):
         """
         utlity function to handle loading from a file-like object
         """
         try:
-            with codecs.open(sourcefile, mode='r', encoding='utf-8') as src:
+            with codecs.open(sourcefile, mode="r", encoding="utf-8") as src:
                 self._markup = src.read()
                 shasum = hashlib.sha256()
-                shasum.update(self._markup.encode('utf-8'))
+                shasum.update(self._markup.encode("utf-8"))
                 self._checksum = shasum.hexdigest()
                 print(self.checksum)
                 self.load_time = datetime.datetime.now()
@@ -92,7 +92,7 @@ class Song(object):
             print("Unable to open input file {0.filename} ({0.strerror}".format(E))
             self._markup = None
 
-    def __extract_meta(self, markup=None, leader=';'):
+    def __extract_meta(self, markup=None, leader=";"):
         """
         parse out metadata from file,
         This MUST be done before passing to markdown
@@ -104,7 +104,7 @@ class Song(object):
         """
         if markup is None:
             markup = self._markup
-        metap = re.compile(r'^{}\s?(.*)'.format(leader), re.I|re.U)
+        metap = re.compile(r"^{}\s?(.*)".format(leader), re.I | re.U)
         metadata = []
         content = []
 
@@ -114,9 +114,8 @@ class Song(object):
                 metadata.append(res.group(1))
             else:
                 content.append(l)
-        self._markup = '\n'.join(content)
-        self._metadata = yaml.safe_load('\n'.join(metadata))
-
+        self._markup = "\n".join(content)
+        self._metadata = yaml.safe_load("\n".join(metadata))
 
     def __parse(self, **kwargs):
         """
@@ -132,18 +131,16 @@ class Song(object):
         # strip out any metadata entries from input
         self.__extract_meta(self._markup)
 
-        raw_html = markdown.markdown(self._markup,
-                                     extensions=[
-                                       'markdown.extensions.nl2br',
-                                       'ukedown.udn']
-                                    )
+        raw_html = markdown.markdown(
+            self._markup, extensions=["markdown.extensions.nl2br", "ukedown.udn"]
+        )
         # process HTML with BeautifulSoup to parse out headers etx
-        soup = bs(raw_html, features='lxml')
+        soup = bs(raw_html, features="lxml")
 
         # extract our sole H1 tag, which should be the title - artist string
         hdr = soup.h1.extract()
         try:
-            title, artist = [ i.strip() for i in hdr.text.split('-', 1) ]
+            title, artist = [i.strip() for i in hdr.text.split("-", 1)]
         except ValueError:
             title = hdr.text.strip()
             artist = None
@@ -153,7 +150,7 @@ class Song(object):
         # now parse out all chords used in this songsheet
         # ideally keep ordering, so can't use python sets
         chordlist = []
-        for crd in soup.findAll('span', {'class': 'chord'}):
+        for crd in soup.findAll("span", {"class": "chord"}):
             cname = crd.text.split().pop(0)
             if cname not in chordlist:
                 chordlist.append(cname)
@@ -164,9 +161,7 @@ class Song(object):
         self._artist = artist
 
         # add processed body text (with headers etc converted)
-        self.body = ''.join([ str(x) for x in soup.body.contents ]).strip()
-
-
+        self.body = "".join([str(x) for x in soup.body.contents]).strip()
 
     def render(self, template):
         """
@@ -180,7 +175,7 @@ class Song(object):
         """
         pass
 
-# Property-based attribute settings - some are read-only in this interface
+    # Property-based attribute settings - some are read-only in this interface
 
     @property
     def markup(self):
