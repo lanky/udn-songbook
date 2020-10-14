@@ -2,11 +2,14 @@
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 
 import os
-from glob import glob
+import fnmatch
+# from glob import glob
 
-from jinja2 import Environment, FileSystemLoader
+# from jinja2 import Environment, FileSystemLoader
 
 from . import song
+from collections import OrderedDict
+from operator import attrgetter, itemgetter
 
 
 class SongBook(object):
@@ -15,7 +18,7 @@ class SongBook(object):
     provides stylesheets, template environments, indexing etc
     """
 
-    def __init__(self, inputs=[], stylesheets=[]):
+    def __init__(self, inputs=[], stylesheets=[], duplicates=False):
         """
         Create a songbook object from a list of inputs.
         Inputs can be directories, too.
@@ -27,34 +30,70 @@ class SongBook(object):
         # keep track of all the chord diagrams we need for the book
         self.chords = set([])
         self.contents = []
-        self.index = {}
+        # index will actually be { title artist: [ list of songs ] }
+        self._index = {}
+
+        if len(self._inputs):
+            self.populate()
+            self.collate()
+
+    def add_song(self, path):
+        """
+        add a song to the contents list and index
+
+        Args:
+            songdata(str): path to a file (usually)
+        """
+        try:
+            s = song.Song(path)
+            # add the song object to our content list
+            self.contents.append(s)
+            # add the chords it uses to our chords list
+            self.chords.update(s.chords)
+            # insert into index
+            if s.songid not in self._index:
+                self._index[s.songid] = []
+            self._index[s.songid].append(s)
+            print(self._index)
+        except:
+            print("failed to add song", path)
+            raise
 
     def populate(self):
         """
         Reads in the content of any input directories, as Song objects
         """
-        for src in self.inputs:
-            rp = os.path.realpath(src)
-            if os.path.isfile(rp) and fnmatch.fnmatch(os.path.basename(src), "*.udn"):
-                self.contents.append(song.Song(rp))
-            elif os.path.isdir(rp):
-                for rt, dirs, files in os.walk(rp):
-                    flist = fnmatch.filter(
-                        [os.path.join(rt, f) for f in files], "*.udn"
-                    )
-                    self.contents.extend([song.Song(f) for f in flist])
+        for src in self._inputs:
+            if os.path.exists(src):
+                rp = os.path.realpath(src)
+                if (os.path.isfile(rp) and
+                   fnmatch.fnmatch(os.path.basename(rp), "*.udn")):
+                    print("adding songfile {}".format(rp))
+                    self.add_song(rp)
+                    continue
+                if os.path.isdir(rp):
+                    print("Scanning dir {} for ukedown files".format(rp))
+                    for rt, dirs, files in os.walk(rp):
+                        for f in fnmatch.filter(
+                                [os.path.join(rt, f)for f in files], "*.udn"):
+                            self.add_song(f)
             else:
                 print("cannot load from non-file/dir {}".format(src))
 
-        self.chords = set(s.chords for s in self.contents)
+        # self.chords.update(set(s.chords) for s in self.contents)
+        # print(self.contents)
+        # print([s.chords for s in self.contents])
+        # self.chords = set(s.chords for s in self.contents)
 
     def collate(self):
         """
         reduce contents list to unique entries, indexed on title - artist
+        title and artist must be a unique combination.
+        Although we could permit dupes I guess, depending on the book.
         """
-        for entry in self.contents:
-            k = "{0.title}-{0.artist}".format(entry).lower().replace(" ", "_")
-            self.index[k] = entry
+        return OrderedDict({k: s for (k, v) in
+                            sorted(self._index.items(), key=itemgetter(0))
+                            for s in v})
 
     def add(self, songfile):
         """Add a new song to the book
@@ -65,7 +104,6 @@ class SongBook(object):
             songfile (str): path to songfile
         """
         pass
-
 
     def update(self, inputs):
         """
@@ -90,3 +128,12 @@ class SongBook(object):
     def render(self, template):
         # renders the songook to a file or files.
         pass
+
+    @property
+    def inputs(self):
+        return self._inputs
+
+    @property
+    def index(self):
+        return self._index
+

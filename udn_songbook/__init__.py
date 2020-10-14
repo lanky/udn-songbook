@@ -1,1 +1,1 @@
-all = ["song", "book"]
+__all__ = ["song", "book"]

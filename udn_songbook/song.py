@@ -9,10 +9,14 @@ import re
 import yaml
 import markdown
 import hashlib
-import ukedown.udn
 import datetime
 
+# HTML processing, rendering and manipulation
+import ukedown.udn
+import jinja2
 from bs4 import BeautifulSoup as bs
+
+# installed directory is os.path.dirname(os.path.realpath(__file__))
 
 
 class Song(object):
@@ -29,35 +33,53 @@ class Song(object):
         """
         construct our song object from a ukedown (markdown++) file
         Args:
-            markup(str):     ukedown content read from a file. This must be unicode (UTF-8)
-
+            src can be one of the following
+            src(str):        ukedown content read from a file.
+                             This must be unicode (UTF-8)
             fh(file handle): an open file handle (or equivalent object)
-                             supporting 'read' (stringIO etc). This should
-                             produce UTF-8 when read (codecs.open is your friend)
+                             supporting 'read' (stringIO etc).
+                             This should produce UTF-8 when read
+                             (codecs.open is your friend)
             src(path):       path to a ukedown-formatted file to open and parse
 
         Kwargs:
             anything can be customised, most attributes/properties are
             auto-generated, but we sometimes need to override them
             Those listed below are commonly-used properties.
-            These can also be parsed out of the songsheet itself, using metadata markup
+            These can also be parsed out of the songsheet itself
+            using metadata markup
 
             title(str):      Song Title
             title_sort(str): Song title in sortable order
             artist(str):     artist name, as printed
-            artist_sort:     sortable artist name, usually either "Surname, Firstname"
-                             or "Band Name, The" where appropriate.
+            artist_sort:     sortable artist name, usually either
+                             "Surname, Firstname" or "Band Name, The"
+                             where appropriate.
             tags(list):      tags to apply to this song (tentative, tested etc)
+            template(path):  the jinja2 template used to render this song.
+                             can be overridden at the songbook level
 
         """
-        self._checksum = "None"
+        self._checksum = None
+        self._load_time = datetime.datetime.now()
+        self._mod_time = None
+        self._index_entry = None
 
+        # did we pass a filename?
         if os.path.exists(src):
             self.__load(src)
             self._filename = src
+            self._fsize = os.path.getsize(src)
+        elif hasattr(src, 'read'):
+            # if we're operating on a filehandle
+            self._markup = src.read()
+            self._filename = src.name
+            self._fsize = len(src.read())
+            #
         else:
             # presume we've been given content
             self._markup = src
+            self._fsize = len(src)
 
         # does nothing yet
         self._filename = src
@@ -74,6 +96,10 @@ class Song(object):
         if self._filename is None:
             self._filename = ("{0.title}_-_{0.artist}".format(self)).lower()
 
+        if self._index_entry is None:
+            self._index_entry = '{0.title} - {0.artist}'.format(self)
+
+        self.__checksum()
 
     def __load(self, sourcefile):
         """
@@ -82,17 +108,21 @@ class Song(object):
         try:
             with codecs.open(sourcefile, mode="r", encoding="utf-8") as src:
                 self._markup = src.read()
-                shasum = hashlib.sha256()
-                shasum.update(self._markup.encode("utf-8"))
-                self._checksum = shasum.hexdigest()
-                print(self.checksum)
-                self.load_time = datetime.datetime.now()
-                self.mod_time = os.path.getmtime(sourcefile)
+                self._mod_time = datetime.datetime.fromtimestamp(
+                        os.path.getmtime(sourcefile))
                 self.fsize = os.path.getsize(sourcefile)
 
         except (IOError, OSError) as E:
             print("Unable to open input file {0.filename} ({0.strerror}".format(E))
             self._markup = None
+
+    def __checksum(self):
+        """
+        Generate sha256 checksum of loaded content (checking for changes)
+        """
+        shasum = hashlib.sha256()
+        shasum.update(self._markup.encode("utf-8"))
+        self._checksum = shasum.hexdigest()
 
     def __extract_meta(self, markup=None, leader=";"):
         """
@@ -169,11 +199,17 @@ class Song(object):
         """
         Render HTML output - This will need to use the jinja templates.
         """
+        if not self.jinja_env:
+            self.jinja_env = jinja2.Environment(
+                                loader=jinja2.FileSystemLoader(
+                                    os.path.dirname(os.path.realpath(__file__)))
+                                )
         pass
 
     def pdf(self):
         """
         Generate a PDF songsheet from this song
+        This will require weasyprint and a stylesheet
         """
         pass
 
@@ -250,5 +286,32 @@ class Song(object):
         # actually updates, not replaces
         try:
             self._metadata.update(data)
-        except:
-            raise StandardError("data must be a dict")
+        except TypeError:
+            raise TypeError("data must be a dict")
+
+    @property
+    def size(self):
+        return self._fsize
+
+    @property
+    def loaded(self):
+        return("{0._load_time:%Y-%m-%d %H:%M:%S}".format(self))
+
+    @property
+    def modified(self):
+        return("{0._mod_time:%Y-%m-%d %H:%M:%S}".format(self))
+
+    @property
+    def stat(self):
+        return "size: {0.fsize}, loaded: {0.loaded}, modified {0.modified}".format(self)
+
+    @property
+    def songid(self):
+        return self._index_entry
+
+    @songid.setter
+    def songid(self, data):
+        try:
+            self._index_entry = str(data)
+        except TypeError:
+            raise TypeError("Song IDs must be strings, or be convertible to strings")
