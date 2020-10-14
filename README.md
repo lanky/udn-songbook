@@ -1,4 +1,4 @@
-# ukebook
+# udn-songbook
 A class-based abstraction of a songbook, using the ukedown rendering engine
 
 # requirements
