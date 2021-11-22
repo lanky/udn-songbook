@@ -24,6 +24,11 @@ class SongBook(object):
         Inputs can be directories, too.
         By default, songbook content is just a list, so can have
         repeat entries.
+
+        Kwargs:
+            inputs(list[str]): list of files or directories containing UDN files
+            stylesheets(list[str]): CSS stylesheets to use for rendering the book
+            duplicates(bool): Whether to allow duplicate title/artist songs in the book.
         """
         self._inputs = inputs
         self._stylesheets = stylesheets
