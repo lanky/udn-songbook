@@ -131,7 +131,7 @@ class SongBook(object):
         pass
 
     def render(self, template):
-        # renders the songook to a file or files.
+        # renders the songbook to a file or files.
         pass
 
     @property
