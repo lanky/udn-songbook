@@ -2,6 +2,9 @@
 
 THis project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.0.2
+- update dependencies for PyYAML (5 or greater)
+
 ## 1.0.1
 - update dependencies for newer versions of
   - BeautifulSoup4 4.9.3 to 5
