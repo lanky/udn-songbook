@@ -124,7 +124,7 @@ class SongBook(object):
         title and artist must be a unique combination.
         Although we could permit dupes I guess, depending on the book.
         """
-        return OrderedDict({k: s for (k, v) in
+        self._index = OrderedDict({k: s for (k, v) in
                             sorted(self._index.items(), key=itemgetter(0))
                             for s in v})
 
