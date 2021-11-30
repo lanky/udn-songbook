@@ -19,8 +19,7 @@ class SongBook(object):
     provides stylesheets, template environments, indexing etc
     """
 
-    def __init__(self, inputs=[], stylesheets=[], duplicates=False):
-    def __init__(self, inputs=[], stylesheets=[], duplicates=False, logger=None):
+    def __init__(self, inputs=[], stylesheets=[], logger=None):
         """
         Create a songbook object from a list of inputs.
         Inputs can be directories, too.
