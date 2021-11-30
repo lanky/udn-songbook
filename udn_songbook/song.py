@@ -26,7 +26,6 @@ class Song(object):
     songs are instantiated from ukedown files
 
     This wrapper is intended to make it simpler to construct a DB model
-    for this content
     for this content, plus to take all this code out of any automation
     scripts
     """
@@ -96,7 +95,6 @@ class Song(object):
             setattr(self, key, val)
 
         if self._filename is None:
-            self._filename = ("{0.title}_-_{0.artist}".format(self)).lower()
             self._filename = ("{0.title}_-_{0.artist}.udn".format(self)).lower()
 
         if self._index_entry is None:
