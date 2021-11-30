@@ -6,6 +6,7 @@ import fnmatch
 # from glob import glob
 
 # from jinja2 import Environment, FileSystemLoader
+import logging
 
 from . import song
 from collections import OrderedDict
@@ -19,6 +20,7 @@ class SongBook(object):
     """
 
     def __init__(self, inputs=[], stylesheets=[], duplicates=False):
+    def __init__(self, inputs=[], stylesheets=[], duplicates=False, logger=None):
         """
         Create a songbook object from a list of inputs.
         Inputs can be directories, too.
@@ -29,8 +31,12 @@ class SongBook(object):
             inputs(list[str]): list of files or directories containing UDN files
             stylesheets(list[str]): CSS stylesheets to use for rendering the book
             duplicates(bool): Whether to allow duplicate title/artist songs in the book.
+            logger(logging.Logger or None): where to log messages to. If None, no logging is performed
         """
-        self._inputs = inputs
+        if not isinstance(inputs, list):
+            self._inputs = [inputs]
+        else:
+            self._inputs = inputs
         self._stylesheets = stylesheets
         # keep track of all the chord diagrams we need for the book
         self.chords = set([])
@@ -38,9 +44,31 @@ class SongBook(object):
         # index will actually be { title artist: [ list of songs ] }
         self._index = {}
 
+        # logger instance, if there is one.
+        self._logger = logger
         if len(self._inputs):
             self.populate()
             self.collate()
+
+    def __log(self, message, prio=logging.DEBUG, **kwargs):
+        """
+        emit a log message, or don't, if self.logger is None.
+
+        presumes that self.logger is a logging.Logger instance
+        with configured handlers, formats etc. No attempt is made to do
+        this part for you
+
+        Args:
+            message(str): the message to emit
+        KWargs:
+            prio(int): the priority of the message. Default is 10 (logging.DEBUG)
+
+        You may also provide other kwargs supported by the logger.log method
+        """
+        if self._logger is not None:
+            self._logger.log(prio, message, **kwargs)
+        else:
+            return
 
     def add_song(self, path):
         """
@@ -59,9 +87,10 @@ class SongBook(object):
             if s.songid not in self._index:
                 self._index[s.songid] = []
             self._index[s.songid].append(s)
-            print(self._index)
+            self.__log(f"Added {path} with id {s.songid}")
         except:
             print("failed to add song", path)
+            self.__log(f"failed to add {path}", logging.ERROR, exc_info=True)
             raise
 
     def populate(self):
@@ -73,17 +102,17 @@ class SongBook(object):
                 rp = os.path.realpath(src)
                 if (os.path.isfile(rp) and
                    fnmatch.fnmatch(os.path.basename(rp), "*.udn")):
-                    print("adding songfile {}".format(rp))
+                    self.__log(f"adding songfile {rp}")
                     self.add_song(rp)
                     continue
                 if os.path.isdir(rp):
-                    print("Scanning dir {} for ukedown files".format(rp))
+                    self.__log(f"Scanning dir {rp} for ukedown files")
                     for rt, dirs, files in os.walk(rp):
                         for f in fnmatch.filter(
                                 [os.path.join(rt, f)for f in files], "*.udn"):
                             self.add_song(f)
             else:
-                print("cannot load from non-file/dir {}".format(src))
+                self.__log(f"cannot load from non-file/dir {src}", logging.ERROR)
 
         # self.chords.update(set(s.chords) for s in self.contents)
         # print(self.contents)
