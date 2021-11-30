@@ -6,6 +6,7 @@
 import os
 import sys
 import jinja2
+from .filters import custom_filters
 
 class Renderer(object):
     """
@@ -29,6 +30,8 @@ class Renderer(object):
                     jinja2.PackageLoader('udn_songbook', 'templates'),
                     ])
                 )
+        # update the filter list
+        self.env.filters.update(custom_filters)
 
     def render(self, template, context, **kwargs):
         """
