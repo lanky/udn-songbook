@@ -40,7 +40,7 @@ class SongBook(object):
         # keep track of all the chord diagrams we need for the book
         self.chords = set([])
         self.contents = []
-        # index will actually be { title artist: [ list of songs ] }
+        # index will actually be { 'title - artist' : song object }
         self._index = {}
 
         # logger instance, if there is one.
@@ -113,11 +113,6 @@ class SongBook(object):
             else:
                 self.__log(f"cannot load from non-file/dir {src}", logging.ERROR)
 
-        # self.chords.update(set(s.chords) for s in self.contents)
-        # print(self.contents)
-        # print([s.chords for s in self.contents])
-        # self.chords = set(s.chords for s in self.contents)
-
     def collate(self):
         """
         reduce contents list to unique entries, indexed on title - artist
@@ -140,20 +135,19 @@ class SongBook(object):
 
     def update(self, inputs):
         """
-        replace entires in an existing songbook using the provided inputs
+        replace entries in an existing songbook using the provided inputs
         This will regenerate the index
         """
-        pass
+        self.inputs.append(inputs)
+        self.populate()
+        self.collate()
 
     def refresh(self):
         """
         reload all the current inputs (that have changed)
         This is a checksumming/stat operation
         """
-        # walk over current index/contents
-        # check stat for last change (since songbook population)
-        # compare checksum - has the content actually changed?
-        # this is a PATH operation and may rebuild the songbook index
+        # this is a PATH operation and will rebuild the songbook index
         # this permits us to change metadata (title etc) and have the book
         # reordered appropriately.
         pass
