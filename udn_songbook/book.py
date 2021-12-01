@@ -150,11 +150,9 @@ class SongBook(object):
         # this is a PATH operation and will rebuild the songbook index
         # this permits us to change metadata (title etc) and have the book
         # reordered appropriately.
-        pass
-
-    def render(self, template):
-        # renders the songbook to a file or files.
-        pass
+        if len(self.inputs):
+            self.populate()
+            self.collate()
 
     @property
     def inputs(self):
