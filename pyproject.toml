@@ -12,6 +12,7 @@ PyYAML = ">= 5"
 WeasyPrint = "^53.4"
 Markdown = "^3.3.4"
 Jinja2 = "^3.0.1"
+lxml = "^4.6.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
