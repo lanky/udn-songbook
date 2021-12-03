@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 
-import os
 import fnmatch
-
-# from glob import glob
 
 # from jinja2 import Environment, FileSystemLoader
 import logging
+import os
+from collections import OrderedDict
+from operator import itemgetter
 
 from . import song
-from collections import OrderedDict
-from operator import attrgetter, itemgetter
+
+# from glob import glob
 
 
 class SongBook(object):

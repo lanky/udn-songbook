@@ -5,8 +5,11 @@
 
 import os
 import sys
+
 import jinja2
+
 from .filters import custom_filters
+
 
 class Renderer(object):
     """
@@ -14,7 +17,7 @@ class Renderer(object):
     engine we choose to use
 
     All SOng objects contain HTML markup, these classes are intended to
-    use that to output HTML documents 
+    use that to output HTML documents
     """
 
     def __init__(self, templatedirs=[], stylesheets=[]):
@@ -25,11 +28,13 @@ class Renderer(object):
         Same applies to css. Should probably move over to scss but there you go.
         """
         self.env = jinja2.Environment(
-                loader = jinja2.ChoiceLoader([
+            loader=jinja2.ChoiceLoader(
+                [
                     jinja2.FileSystemLoader(templatedirs),
-                    jinja2.PackageLoader('udn_songbook', 'templates'),
-                    ])
-                )
+                    jinja2.PackageLoader("udn_songbook", "templates"),
+                ]
+            )
+        )
         # update the filter list
         self.env.filters.update(custom_filters)
 
@@ -43,15 +48,19 @@ class Renderer(object):
         tpl = self.env.get_template(template)
         return tpl.render(context, **kwargs)
 
+
 class HTMLRenderer(Renderer):
     """
     The HTML Renderer uses Jinja2 templates to generate HTML pages and an index if appropriate
     Each song will have HTML markup automatically generated via ukedown
     """
+
     pass
+
 
 class PDFRenderer(Renderer):
     """
     The PDF Renderer processes one or more songsheets and returns them as rendered PDF docs
     """
+
     pass

@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 
-import os
-
 # object-oriented wrapper around song objects
 import codecs
-import re
-import yaml
-import markdown
-import hashlib
 import datetime
+import hashlib
+import os
+import re
+
+import jinja2
+import markdown
 
 # HTML processing, rendering and manipulation
 import ukedown.udn
-import jinja2
+import yaml
 from bs4 import BeautifulSoup as bs
 
 # installed directory is os.path.dirname(os.path.realpath(__file__))

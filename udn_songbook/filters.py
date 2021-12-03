@@ -19,6 +19,7 @@ def safe_name(chord):
     # replace '/' with _on_
     return chord.translate({ord("#"): "_sharp_", ord("/"): "_on_"})
 
+
 custom_filters = {
-        'safe_name': safe_name,
-        }
+    "safe_name": safe_name,
+}
