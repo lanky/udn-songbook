@@ -8,6 +8,7 @@ import logging
 import os
 from collections import OrderedDict
 from operator import itemgetter
+from typing import List, Union
 
 from . import song
 
@@ -24,9 +25,9 @@ class SongBook(object):
 
     def __init__(
         self,
-        inputs: list[str] = [],
-        logger: logging.Logger | None = None,
-        template_paths: list[str] = [],
+        inputs: List[str] = [],
+        logger: Union[logging.Logger, None] = None,
+        template_paths: List[str] = [],
         song_template: str = "song.j2",
         index_template: str = "bookindex.j2",
     ):
@@ -85,7 +86,7 @@ class SongBook(object):
         else:
             return
 
-    def add_song(self, path: str, index: int = 1):
+    def add_song(self, path: str):
         """
         add a song to the contents list and index
 
@@ -145,17 +146,7 @@ class SongBook(object):
             }
         )
 
-    def add(self, songfile: str):
-        """Add a new song to the book
-
-        Adds a new song object to the current songbook
-
-        Args:
-            songfile (str): path to songfile
-        """
-        pass
-
-    def update(self, inputs: list[str]):
+    def update(self, inputs: List[str]):
         """
         replace entries in an existing songbook using the provided inputs
         This will regenerate the index
