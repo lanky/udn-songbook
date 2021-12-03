@@ -3,6 +3,7 @@
 
 import os
 import fnmatch
+
 # from glob import glob
 
 # from jinja2 import Environment, FileSystemLoader
@@ -15,28 +16,43 @@ from operator import attrgetter, itemgetter
 
 class SongBook(object):
     """
-    wrapper around a list of songs with additional context
-    provides stylesheets, template environments, indexing etc
+    Wrapper class representing a songbook, which is essentially an indexed list of songsheets, in
+    `ukedown` format, indexed on Title and Artist.
+    Duplicate songs are not supported - if you add more than one song with the same Title & Artist,
+    the last one seen will win. Order matters.
     """
 
-    def __init__(self, inputs=[], stylesheets=[], logger=None):
+    def __init__(
+        self,
+        inputs: list[str] = [],
+        logger: logging.Logger | None = None,
+        template_paths: list[str] = [],
+        song_template: str = "song.j2",
+        index_template: str = "bookindex.j2",
+    ):
         """
         Create a songbook object from a list of inputs.
         Inputs can be directories, too.
-        By default, songbook content is just a list, so can have
-        repeat entries.
+
+        Songs in a book are indexed on 'Title - Artist', which is parsed out of
+        the ukedown markup. Duplicate index entries are not supported. If 2 songs are added with the
+        same Title and Artist, the last one wins
 
         Kwargs:
-            inputs(list[str]): list of files or directories containing UDN files
-            stylesheets(list[str]): CSS stylesheets to use for rendering the book
-            duplicates(bool): Whether to allow duplicate title/artist songs in the book.
+            inputs(list[str]):   list of files or directories containing UDN files
+            duplicates(bool):    Whether to allow duplicate title/artist songs in the book.
             logger(logging.Logger or None): where to log messages to. If None, no logging is performed
+            template_paths(str): paths to jinja2 template directories. These will take precedence over
+                                 the internal templates, if the names match :)
+            song_template(str):  filename for jinja2 template for rendering Song objects
+            index_template(str): filename for jinja2 for rendering the index.
+        # to be added /managed, probably via dynaconf
+        #    config(str):         filename for CSS and other configuration (can include kwargs)
         """
         if not isinstance(inputs, list):
             self._inputs = [inputs]
         else:
             self._inputs = inputs
-        self._stylesheets = stylesheets
         # keep track of all the chord diagrams we need for the book
         self.chords = set([])
         self.contents = []
@@ -49,7 +65,7 @@ class SongBook(object):
             self.populate()
             self.collate()
 
-    def __log(self, message, prio=logging.DEBUG, **kwargs):
+    def __log(self, message: str, prio: int = logging.DEBUG, **kwargs):
         """
         emit a log message, or don't, if self.logger is None.
 
@@ -69,7 +85,7 @@ class SongBook(object):
         else:
             return
 
-    def add_song(self, path):
+    def add_song(self, path: str, index: int = 1):
         """
         add a song to the contents list and index
 
@@ -99,16 +115,18 @@ class SongBook(object):
         for src in self._inputs:
             if os.path.exists(src):
                 rp = os.path.realpath(src)
-                if (os.path.isfile(rp) and
-                   fnmatch.fnmatch(os.path.basename(rp), "*.udn")):
+                if os.path.isfile(rp) and fnmatch.fnmatch(
+                    os.path.basename(rp), "*.udn"
+                ):
                     self.__log(f"adding songfile {rp}")
                     self.add_song(rp)
                     continue
                 if os.path.isdir(rp):
                     self.__log(f"Scanning dir {rp} for ukedown files")
-                    for rt, dirs, files in os.walk(rp):
+                    for rt, _dirs, files in os.walk(rp):
                         for f in fnmatch.filter(
-                                [os.path.join(rt, f)for f in files], "*.udn"):
+                            [os.path.join(rt, f) for f in files], "*.udn"
+                        ):
                             self.add_song(f)
             else:
                 self.__log(f"cannot load from non-file/dir {src}", logging.ERROR)
@@ -119,11 +137,15 @@ class SongBook(object):
         title and artist must be a unique combination.
         Although we could permit dupes I guess, depending on the book.
         """
-        self._index = OrderedDict({k: s for (k, v) in
-                            sorted(self._index.items(), key=itemgetter(0))
-                            for s in v})
+        self._index = OrderedDict(
+            {
+                k: s
+                for (k, v) in sorted(self._index.items(), key=itemgetter(0))
+                for s in v
+            }
+        )
 
-    def add(self, songfile):
+    def add(self, songfile: str):
         """Add a new song to the book
 
         Adds a new song object to the current songbook
@@ -133,7 +155,7 @@ class SongBook(object):
         """
         pass
 
-    def update(self, inputs):
+    def update(self, inputs: list[str]):
         """
         replace entries in an existing songbook using the provided inputs
         This will regenerate the index
@@ -161,4 +183,3 @@ class SongBook(object):
     @property
     def index(self):
         return self._index
-
