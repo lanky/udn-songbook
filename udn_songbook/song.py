@@ -71,7 +71,7 @@ class Song(object):
             self.__load(src)
             self._filename = src
             self._fsize = os.path.getsize(src)
-        elif hasattr(src, 'read'):
+        elif hasattr(src, "read"):
             # if we're operating on a filehandle
             self._markup = src.read()
             self._filename = src.name
@@ -98,7 +98,7 @@ class Song(object):
             self._filename = ("{0.title}_-_{0.artist}.udn".format(self)).lower()
 
         if self._index_entry is None:
-            self._index_entry = '{0.title} - {0.artist}'.format(self)
+            self._index_entry = "{0.title} - {0.artist}".format(self)
 
         self.__checksum()
 
@@ -110,7 +110,8 @@ class Song(object):
             with codecs.open(sourcefile, mode="r", encoding="utf-8") as src:
                 self._markup = src.read()
                 self._mod_time = datetime.datetime.fromtimestamp(
-                        os.path.getmtime(sourcefile))
+                    os.path.getmtime(sourcefile)
+                )
                 self.fsize = os.path.getsize(sourcefile)
 
         except (IOError, OSError) as E:
@@ -141,12 +142,12 @@ class Song(object):
         metadata = []
         content = []
 
-        for l in markup.splitlines():
-            res = metap.match(l)
+        for line in markup.splitlines():
+            res = metap.match(line)
             if res is not None:
                 metadata.append(res.group(1))
             else:
-                content.append(l)
+                content.append(line)
         self._markup = "\n".join(content)
         self._metadata = yaml.safe_load("\n".join(metadata))
 
@@ -202,9 +203,10 @@ class Song(object):
         """
         if not self.jinja_env:
             self.jinja_env = jinja2.Environment(
-                                loader=jinja2.FileSystemLoader(
-                                    os.path.dirname(os.path.realpath(__file__)))
-                                )
+                loader=jinja2.FileSystemLoader(
+                    os.path.dirname(os.path.realpath(__file__))
+                )
+            )
         pass
 
     def pdf(self):
@@ -238,7 +240,7 @@ class Song(object):
 
     @artist.setter
     def artist(self, value):
-        self._artist = artist
+        self._artist = value
 
     @property
     def title(self):
@@ -296,11 +298,11 @@ class Song(object):
 
     @property
     def loaded(self):
-        return("{0._load_time:%Y-%m-%d %H:%M:%S}".format(self))
+        return "{0._load_time:%Y-%m-%d %H:%M:%S}".format(self)
 
     @property
     def modified(self):
-        return("{0._mod_time:%Y-%m-%d %H:%M:%S}".format(self))
+        return "{0._mod_time:%Y-%m-%d %H:%M:%S}".format(self)
 
     @property
     def stat(self):
@@ -308,6 +310,9 @@ class Song(object):
 
     @property
     def songid(self):
+        """
+        The string representation in a songbook index
+        """
         return self._index_entry
 
     @songid.setter
