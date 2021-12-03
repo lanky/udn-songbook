@@ -15,6 +15,9 @@ Jinja2 = "^3.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
+pre-commit = "^2.16.0"
+black = "^21.11b1"
+flake8 = "^4.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -26,5 +29,11 @@ build-backend = "poetry.core.masonry.api"
 # know the type
 reportOptionalSubscript = false
 reportOptionalIterable = false
-reportOptionalMemberAccess = false    
+reportOptionalMemberAccess = false
 
+[tool.black]
+# project-specific black setup
+line-length = 88
+target-version = ['py38', 'py39', 'py310']
+include = '\.pyi?$'
+exclude = '/(\.git|_build|build|dist|\.tox|\.venv)/'
