@@ -103,7 +103,7 @@ class SongBook(object):
                 self._index[s.songid] = []
             self._index[s.songid].append(s)
             self.__log(f"Added {path} with id {s.songid}")
-        except:
+        except Exception:
             print("failed to add song", path)
             self.__log(f"failed to add {path}", logging.ERROR, exc_info=True)
             raise
