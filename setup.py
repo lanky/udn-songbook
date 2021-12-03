@@ -1,7 +1,7 @@
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 import setuptools
 
-with open('README.md', 'r') as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -18,11 +18,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Operating System :: OS Independent"
+        "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    install_requires=[
-        'ukedown',
-        'weasyprint'
-    ],
+    python_requires=">=3.6",
+    install_requires=["ukedown", "weasyprint"],
 )
