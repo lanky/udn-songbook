@@ -10,9 +10,6 @@
 <div class="header" id="title_index"><h1>{{ Songbook }} Index</h1></div>
 <div class="index">
 {% for song in songs %}
-{% if link_type == 'internal' %}
-{% set target='#title_%s'|format(song.id) %}
-{% else %}
 {% set target='songs/%s'| format(song.filename) %}
 {% endif %}
 <a class="indexlink" id="song_{{ song.id}}" href="{{ target }}" alt="{{ song.title }} - {{ song.artist }}">{{ song.title }} - {{ song.artist }}</a><br/>
