@@ -20,6 +20,20 @@ def safe_name(chord):
     return chord.translate({ord("#"): "_sharp_", ord("/"): "_on_"})
 
 
-custom_filters = {
-    "safe_name": safe_name,
-}
+def chunk(iterable, chunksize):
+    """
+    iterate over an iterable, returning chunks of size (length) chunksize.
+    Any remainder is returned as the last chunk.
+
+    Essentially walk over an iterable in batches of `chunksize`
+
+    Args:
+        iterable: any iterable object (list, str, dict etc)
+        chunksize(int): size of chunks to return
+
+    """
+    for i in range(0, len(iterable), chunksize):
+        yield (iterable[i : i + chunksize])
+
+
+custom_filters = {"safe_name": safe_name, "chunk": chunk}
