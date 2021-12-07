@@ -2,6 +2,9 @@
 
 THis project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.0.4
+- require python >= 3.8
+
 ## 1.0.2
 - update dependencies for PyYAML (5 or greater)
 
