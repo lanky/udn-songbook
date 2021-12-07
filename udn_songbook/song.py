@@ -66,16 +66,19 @@ class Song(object):
         self._mod_time = None
         self._index_entry = None
 
-        # did we pass a filename?
-        if os.path.exists(src):
-            self.__load(src)
-            self._filename = src
-            self._fsize = os.path.getsize(src)
-        elif hasattr(src, "read"):
+        if hasattr(src, "read"):
             # if we're operating on a filehandle
+            # or another class that implements 'read'
             self._markup = src.read()
             self._filename = src.name
             self._fsize = len(src.read())
+        elif os.path.exists(src):
+            # did we pass a filename?
+            # This is the most common use case
+            self.__load(src)
+            self._source = src
+            self._filename = os.path.basename(src)
+            self._fsize = os.path.getsize(src)
             #
         else:
             # presume we've been given content
