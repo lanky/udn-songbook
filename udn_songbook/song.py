@@ -10,7 +10,7 @@ import os
 import re
 
 # for type hinting
-from typing import IO, Optional, String, Union
+from typing import IO, Optional, Union
 
 import jinja2
 import markdown
@@ -40,7 +40,7 @@ class Song(object):
     scripts
     """
 
-    def __init__(self, src: Union[IO, String], **kwargs):
+    def __init__(self, src: Union[IO, str], **kwargs):
         """
         construct our song object from a ukedown (markdown++) file
         Args:
