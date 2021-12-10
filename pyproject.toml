@@ -13,6 +13,7 @@ WeasyPrint = "^53.4"
 Markdown = "^3.3.4"
 Jinja2 = "^3.0.1"
 lxml = "^4.6.4"
+pychord = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
