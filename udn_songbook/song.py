@@ -5,8 +5,12 @@
 import codecs
 import datetime
 import hashlib
+import io
 import os
 import re
+
+# for type hinting
+from typing import IO, Optional, String, Union
 
 import jinja2
 import markdown
@@ -15,8 +19,14 @@ import markdown
 import ukedown.udn
 import yaml
 from bs4 import BeautifulSoup as bs
+from pychord import Chord
+from ukedown import patterns
+
+from .utils import safe_filename
 
 # installed directory is os.path.dirname(os.path.realpath(__file__))
+
+CRDPATT = re.compile(patterns.CHORD)
 
 
 class Song(object):
@@ -30,14 +40,14 @@ class Song(object):
     scripts
     """
 
-    def __init__(self, src, **kwargs):
+    def __init__(self, src: Union[IO, String], **kwargs):
         """
         construct our song object from a ukedown (markdown++) file
         Args:
             src can be one of the following
             src(str):        ukedown content read from a file.
                              This must be unicode (UTF-8)
-            fh(file handle): an open file handle (or equivalent object)
+            src(file handle): an open file handle (or equivalent object)
                              supporting 'read' (stringIO etc).
                              This should produce UTF-8 when read
                              (codecs.open is your friend)
@@ -70,7 +80,10 @@ class Song(object):
             # if we're operating on a filehandle
             # or another class that implements 'read'
             self._markup = src.read()
-            self._filename = src.name
+            if hasattr(src, "name"):
+                self._filename = src.name
+            else:
+                self._filename = None
             self._fsize = len(src.read())
         elif os.path.exists(src):
             # did we pass a filename?
@@ -105,9 +118,25 @@ class Song(object):
 
         self.__checksum()
 
-    def __load(self, sourcefile):
+    def __unicode__(self):
+        return self.songid
+
+    def __str__(self):
+        return self.songid
+
+    def __repr__(self):
+        return f"<Song: {self.songid}>"
+
+    # other 'private' methods for use in __init__, mostly.
+
+    def __load(self, sourcefile: str):
         """
         utlity function to handle loading from a file-like object
+
+        sets:
+            self._markup(str): text content, amy include metadata
+            self._mod_time(datetime): last modified time, if any
+            self.fsize(int): size of input in bytes.
         """
         try:
             with codecs.open(sourcefile, mode="r", encoding="utf-8") as src:
@@ -124,12 +153,15 @@ class Song(object):
     def __checksum(self):
         """
         Generate sha256 checksum of loaded content (checking for changes)
+
+        sets:
+            self._checksum: sha256 hash of content
         """
         shasum = hashlib.sha256()
         shasum.update(self._markup.encode("utf-8"))
         self._checksum = shasum.hexdigest()
 
-    def __extract_meta(self, markup=None, leader=";"):
+    def __extract_meta(self, markup: Optional[str] = None, leader: str = ";"):
         """
         parse out metadata from file,
         This MUST be done before passing to markdown
@@ -138,6 +170,10 @@ class Song(object):
         Args:
             markup(str): content of file, which we will manipulate in place
             leader(str): leader character - only process lines that begin with this
+
+        sets:
+            self._markup(str): cleaned markdown/udn without metadata
+            self._meta(dict): metadata (if any) extracted from markup
         """
         if markup is None:
             markup = self._markup
@@ -152,7 +188,7 @@ class Song(object):
             else:
                 content.append(line)
         self._markup = "\n".join(content)
-        self._metadata = yaml.safe_load("\n".join(metadata))
+        self._meta = yaml.safe_load("\n".join(metadata))
 
     def __parse(self, **kwargs):
         """
@@ -161,16 +197,35 @@ class Song(object):
 
         kwargs:
             properties to set on parsed object, usually passed in from __init__
-            These override self._metadata - so you can set them externally, add tags
+            These override self._meta - so you can set them externally, add tags
             etc willy-nilly.
+
+        sets:
+            self._markup
 
         """
         # strip out any metadata entries from input
         self.__extract_meta(self._markup)
 
+        # convert remaining markup to HTML
+        self.__parse_markup()
+
+        # extract chords and positions in text/markup
+        self.__parse_chords()
+
+    def __parse_markup(self):
+        """
+        Convert markup to HTML, set attributes
+        sets:
+            self.title:   title (parsed from first line)
+            self.artist:  Artist (parsed from first line)
+            self.content: HTML content.
+        """
+        # convert UDN to HTML via markdown + extensions.
         raw_html = markdown.markdown(
             self._markup, extensions=["markdown.extensions.nl2br", "ukedown.udn"]
         )
+
         # process HTML with BeautifulSoup to parse out headers etx
         soup = bs(raw_html, features="lxml")
 
@@ -181,26 +236,43 @@ class Song(object):
         except ValueError:
             title = hdr.text.strip()
             artist = None
+
         # remove the header from our document
         hdr.decompose()
 
-        # now parse out all chords used in this songsheet
-        # ideally keep ordering, so can't use python sets
-        chordlist = []
-        for crd in soup.findAll("span", {"class": "chord"}):
-            cname = crd.text.split().pop(0)
-            if cname not in chordlist:
-                chordlist.append(cname)
-
-        # set attributes for this song
-        self._chords = chordlist
+        # set core attributes
         self._title = title
         self._artist = artist
 
         # add processed body text (with headers etc converted)
         self.body = "".join([str(x) for x in soup.body.contents]).strip()
 
-    def render(self, template):
+    def __parse_chords(self):
+        """
+        Extract the chords from markup, not HTML. This determines their position
+        in the song and allows us to write code to transpose them.
+
+        sets:
+            self._chord_locations: nested list of chord, start position, end position
+            self._chords: deduplicated chords list, in order of appearence.
+        """
+        # contains chord objects, plus their start and end positions in the text
+        chord_locations = []
+        # an ordered, deduped list of chords (to manage which diagrams we need)
+        chordlist = []
+
+        # walk over matched chords, convert them and record their locations
+        for m in CRDPATT.finditer(self.markup):
+            crd = Chord(m.groups()[0])
+            chord_locations.append([crd, m.start(), m.end()])
+            if crd not in chordlist:
+                chordlist.append(crd)
+
+        # set attributes so we can access these elsewhere
+        self._chord_locations = chord_locations
+        self._chords = chordlist
+
+    def render(self, template: str = "song.html.j2"):
         """
         Render HTML output - This will need to use the jinja templates.
         """
@@ -218,6 +290,76 @@ class Song(object):
         This will require weasyprint and a stylesheet
         """
         pass
+
+    def transpose(self, semitones: int):
+        """
+        shift all chords in the song by the given number of semitones
+        and reparse content
+
+        This will alter the following attributes:
+
+        self._markup
+        self._chords
+        self._chord_locations
+
+
+        """
+        # take a copy to transpose, as the transposition is an in-place
+        # alteration of chord objects
+        tmkup = io.StringIO(self._markup)
+        transposed = []
+        for crd, _start, end in self._chord_locations:
+            # change the chord in place
+            crd.transpose(semitones)
+            # read the section of the markup that contains it
+            # and insert the new transposed version
+            transposed.append(
+                CRDPATT.sub(f"({crd.chord})", tmkup.read(end - tmkup.tell()))
+            )
+
+        # alter the markup in place
+        self._markup = "".join(transposed)
+
+        # convert back to HTML
+        self.__parse_markup()
+
+        # keep a record of our transposition
+        self._meta["transposed"] = semitones
+
+    def save(self, path: str = None):
+        """
+        Save an edited song back to disk. If path is None, will use the
+        original filename (self.sourcefile)
+        """
+
+        # did we provide an output file?
+        if path is not None:
+            outdir, outfile = os.path.split(path)
+        # if not, use the current filename, if it exists
+        elif self.sourcefile is not None:
+            outdir, outfile = os.path.split(self.sourcefile)
+        else:
+            # create a new filename usingtitle and artist
+            outdir = os.curdir
+            outfile = f"{self.title} - {self.artist}.udn"
+
+        dest = os.path.join(outdir, safe_filename(outfile))
+
+        try:
+            with open(dest, "w") as output:
+                output.write(self._markup)
+                # stick the metadata at the bottom
+                if self._meta is not None:
+                    output.write("\n; # metadata")
+                    for line in yaml.safe_dump(
+                        self._meta, default_flow_style=False
+                    ).splitlines():
+                        output.write(f";{line}")
+                self.sourcefile = dest
+                print(f"saved song to {dest}")
+        except (IOError, OSError) as E:
+            # switch to logging at some point
+            print(f"unable to save {E.filename} - {E.strerror}")
 
     # Property-based attribute settings - some are read-only in this interface
 
