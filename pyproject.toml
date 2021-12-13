@@ -32,6 +32,7 @@ build-backend = "poetry.core.masonry.api"
 reportOptionalSubscript = false
 reportOptionalIterable = false
 reportOptionalMemberAccess = false
+reportGeneralTypeIssues = false
 
 [tool.black]
 # project-specific black setup
