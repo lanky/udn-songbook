@@ -26,8 +26,6 @@ from .filters import custom_filters
 from .utils import safe_filename
 
 # installed directory is os.path.dirname(os.path.realpath(__file__))
-
-CRDPATT = re.compile(patterns.CHORD)
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
 CHORD = r"\(([A-G][adgijmnsu0-9#b\/A-G]*)([*\+])?\)"
@@ -484,13 +482,21 @@ class Song(object):
 
     @property
     def meta(self):
-        return self._metadata
+        return self._meta
 
     @meta.setter
-    def meta(self, data):
+    def meta(self, data, **kwargs):
+        """
+        Sets metadata by either updating the dict in place, or
+        using kwargs to change single keys
+
+        kwargs overrides everything else :)
+        """
         # actually updates, not replaces
         try:
-            self._metadata.update(data)
+            self._meta.update(data)
+            if len(kwargs):
+                self._meta.update(kwargs)
         except TypeError:
             raise TypeError("data must be a dict")
 
