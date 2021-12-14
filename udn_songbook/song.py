@@ -365,13 +365,13 @@ class Song(object):
         # alteration of chord objects
         tmkup = io.StringIO(self._markup)
         transposed = []
-        for crd, _start, end in self._chord_locations:
+        for crd, end, tail in self._chord_locations:
             # change the chord in place
             crd.transpose(semitones)
             # read the section of the markup that contains it
             # and insert the new transposed version
             transposed.append(
-                CRDPATT.sub(f"({crd.chord})", tmkup.read(end - tmkup.tell()))
+                CRDPATT.sub(f"({crd.chord}{tail})", tmkup.read(end - tmkup.tell()))
             )
 
         # alter the markup in place
@@ -407,7 +407,7 @@ class Song(object):
                 output.write(self._markup)
                 # stick the metadata at the bottom
                 if self._meta is not None:
-                    output.write("\n; # metadata")
+                    output.write("\n; # metadata\n")
                     for line in yaml.safe_dump(
                         self._meta, default_flow_style=False
                     ).splitlines():
