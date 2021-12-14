@@ -27,6 +27,10 @@ from .utils import safe_filename
 # installed directory is os.path.dirname(os.path.realpath(__file__))
 
 CRDPATT = re.compile(patterns.CHORD)
+# a slightly doctored version of the ukedown chord pattern, which separates
+# '*' (and any other non-standard chord 'qualities' so we can still transpose
+CHORD = r"\(([A-G][adgijmnsu0-9#b\/A-G]*)([*\+])?\)"
+CRDPATT = re.compile(CHORD)
 
 
 class Song(object):
@@ -263,10 +267,18 @@ class Song(object):
 
         # walk over matched chords, convert them and record their locations
         for m in CRDPATT.finditer(self.markup):
-            crd = Chord(m.groups()[0])
-            chord_locations.append([crd, m.start(), m.end()])
-            if crd not in chordlist:
-                chordlist.append(crd)
+            try:
+                crd = Chord(m.groups()[0])
+                tail = m.groups()[1]
+                chord_locations.append([crd, m.end(), tail if tail is not None else ""])
+                if crd not in chordlist:
+                    chordlist.append(crd)
+            except ValueError:
+                # raised when this is not a recognised chord
+                print(
+                    f"Unable to parse chord {m.match} at position {m.start()} in song {self.filename}"
+                )
+                raise
 
         # set attributes so we can access these elsewhere
         self._chord_locations = chord_locations
