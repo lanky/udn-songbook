@@ -28,8 +28,8 @@ class SongBook(object):
         inputs: List[str] = [],
         logger: Union[logging.Logger, None] = None,
         template_paths: List[str] = [],
-        song_template: str = "song.j2",
-        index_template: str = "bookindex.j2",
+        song_template: str = "song.html.j2",
+        index_template: str = "index.html.j2",
     ):
         """
         Create a songbook object from a list of inputs.
@@ -55,7 +55,8 @@ class SongBook(object):
         else:
             self._inputs = inputs
         # keep track of all the chord diagrams we need for the book
-        self.chords = set([])
+        # these are no longer strings, so `chords` can no longer be a set.
+        self.chords = []
         self.contents = []
         # index will actually be { 'title - artist' : song object }
         self._index = {}
@@ -98,7 +99,7 @@ class SongBook(object):
             # add the song object to our content list
             self.contents.append(s)
             # add the chords it uses to our chords list
-            self.chords.update(s.chords)
+            self.chords.extend([c for c in s.chords if c not in self.chords])
             # insert into index
             if s.songid not in self._index:
                 self._index[s.songid] = []
