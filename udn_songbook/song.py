@@ -22,6 +22,7 @@ from bs4 import BeautifulSoup as bs
 from pychord import Chord
 from ukedown import patterns
 
+from .filters import custom_filters
 from .utils import safe_filename
 
 # installed directory is os.path.dirname(os.path.realpath(__file__))
@@ -284,22 +285,66 @@ class Song(object):
         self._chord_locations = chord_locations
         self._chords = chordlist
 
-    def render(self, template: str = "song.html.j2"):
+    def __get_render_env(self, templatedir: str = "") -> jinja2.Environment:
         """
-        Render HTML output - This will need to use the jinja templates.
-        """
-        if not self.jinja_env:
-            self.jinja_env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(
-                    os.path.dirname(os.path.realpath(__file__))
-                )
-            )
-        pass
+        Initialises a jinja2 Environment for rendering songsheets
 
-    def pdf(self):
+        This will load templates from a provided path (templatedir),
+        or if this is not provided (or doesn't exist), from the
+        'templates' directory in this package.
+
+        """
+        jinja_env = jinja2.Environment(
+            loader=jinja2.ChoiceLoader(
+                [
+                    jinja2.FileSystemLoader(templatedir),
+                    jinja2.PackageLoader("udn_songbook"),
+                ]
+            ),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            keep_trailing_newline=True,
+            extensions=["jinja2.ext.do", "jinja2.ext.loopcontrols"],
+        )
+
+        # add our custom filters
+        jinja_env.filters.update(custom_filters)
+
+        return jinja_env
+
+    def render(
+        self,
+        environment: Optional[jinja2.Environment] = None,
+        template: str = "song.html.j2",
+        **context,
+    ) -> str:
+        """
+        Render HTML output using jinja templates.
+        This defaults to using the templates packaged with `udn_songbook` but you
+        can override this with the `templatedir` and `template` parameters
+
+        KWargs:
+            templatedir(str): override location for template files
+            template(str): name of song template to look for
+            context(dict): key=val pairs to add to template context
+
+        """
+        # There are prettier ways to do this but this is simple and readable
+        # if we provide a jinja environment (e.g. from a parent songbook), use it
+        if environment is None:
+            environment = self.__get_render_env()
+
+        tpl = environment.get_template(template)
+        return tpl.render(songbook={}, song=self, **context)
+
+    def pdf(self, stylesheet: str = "pdf.css"):
         """
         Generate a PDF songsheet from this song
         This will require weasyprint and a stylesheet
+
+        Stylesheets are loaded from the udn_songbook installation dir
+        by default, but you can provide a path to a stylesheet of your
+        choice
         """
         pass
 
