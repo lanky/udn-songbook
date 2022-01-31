@@ -59,13 +59,13 @@ class SongBook(object):
         self.chords = []
         self.contents = []
         # index will actually be { 'title - artist' : song object }
-        self._index = {}
+        self._index = OrderedDict()
 
         # logger instance, if there is one.
         self._logger = logger
         if len(self._inputs):
             self.populate()
-            self.collate()
+            self.renumber()
 
     def __log(self, message: str, prio: int = logging.DEBUG, **kwargs):
         """
@@ -101,9 +101,7 @@ class SongBook(object):
             # add the chords it uses to our chords list
             self.chords.extend([c for c in s.chords if c not in self.chords])
             # insert into index
-            if s.songid not in self._index:
-                self._index[s.songid] = []
-            self._index[s.songid].append(s)
+            self._index[s.songid] = s
             self.__log(f"Added {path} with id {s.songid}")
         except Exception:
             print("failed to add song", path)
@@ -140,12 +138,16 @@ class SongBook(object):
         Although we could permit dupes I guess, depending on the book.
         """
         self._index = OrderedDict(
-            {
-                k: s
-                for (k, v) in sorted(self._index.items(), key=itemgetter(0))
-                for s in v
-            }
+            {k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))}
         )
+
+    def renumber(self):
+        """
+        renumber pages in a collated book
+        """
+        self.collate()
+        for i, k in enumerate(self._index):
+            self._index[k].id = i
 
     def update(self, inputs: List[str]):
         """
@@ -154,7 +156,7 @@ class SongBook(object):
         """
         self.inputs.append(inputs)
         self.populate()
-        self.collate()
+        self.renumber()
 
     def refresh(self):
         """
@@ -164,9 +166,9 @@ class SongBook(object):
         # this is a PATH operation and will rebuild the songbook index
         # this permits us to change metadata (title etc) and have the book
         # reordered appropriately.
-        if len(self.inputs):
+        if len(self._inputs):
             self.populate()
-            self.collate()
+            self.renumber()
 
     @property
     def inputs(self):

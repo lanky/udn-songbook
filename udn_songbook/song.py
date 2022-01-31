@@ -72,12 +72,15 @@ class Song(object):
             tags(list):      tags to apply to this song (tentative, tested etc)
             template(path):  the jinja2 template used to render this song.
                              can be overridden at the songbook level
+            id(int):         page number, used as part of the "id" attribute on
+                             headers
 
         """
         self._checksum = None
         self._load_time = datetime.datetime.now()
         self._mod_time = None
         self._index_entry = None
+        self._id = 0
 
         if hasattr(src, "read"):
             # if we're operating on a filehandle
@@ -479,6 +482,14 @@ class Song(object):
     @property
     def checksum(self):
         return self._checksum
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, val: int):
+        self._id = val
 
     @property
     def meta(self):
