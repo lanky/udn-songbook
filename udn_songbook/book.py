@@ -17,10 +17,10 @@ from . import song
 
 class SongBook(object):
     """
-    Wrapper class representing a songbook, which is essentially an indexed list of songsheets, in
-    `ukedown` format, indexed on Title and Artist.
-    Duplicate songs are not supported - if you add more than one song with the same Title & Artist,
-    the last one seen will win. Order matters.
+    Wrapper class representing a songbook, which is essentially an indexed list of
+    songsheets, in `ukedown` format, indexed on Title and Artist.
+    Duplicate songs are not supported - if you add more than one song with the same
+    Title & Artist, the last one seen will win. Order matters.
     """
 
     def __init__(
@@ -36,19 +36,19 @@ class SongBook(object):
         Inputs can be directories, too.
 
         Songs in a book are indexed on 'Title - Artist', which is parsed out of
-        the ukedown markup. Duplicate index entries are not supported. If 2 songs are added with the
-        same Title and Artist, the last one wins
+        the ukedown markup. Duplicate index entries are not supported.
+        If 2 songs are added with the same Title and Artist, the last one wins
 
         Kwargs:
             inputs(list[str]):   list of files or directories containing UDN files
-            duplicates(bool):    Whether to allow duplicate title/artist songs in the book.
-            logger(logging.Logger or None): where to log messages to. If None, no logging is performed
-            template_paths(str): paths to jinja2 template directories. These will take precedence over
-                                 the internal templates, if the names match :)
+            logger(logging.Logger|None): where to log messages to.
+                                         If None, no logging is performed
+            template_paths(str): Paths to jinja2 template directories. These will take
+                                 precedence over internal templates where names clash.
             song_template(str):  filename for jinja2 template for rendering Song objects
             index_template(str): filename for jinja2 for rendering the index.
         # to be added /managed, probably via dynaconf
-        #    config(str):         filename for CSS and other configuration (can include kwargs)
+        #    config(str):        filename for CSS and other configuration
         """
         if not isinstance(inputs, list):
             self._inputs = [inputs]
@@ -161,7 +161,8 @@ class SongBook(object):
     def refresh(self):
         """
         reload all the current inputs (that have changed)
-        This is a checksumming/stat operation
+        This will be a timestamp/checksumming/stat operation when I've
+        written that part
         """
         # this is a PATH operation and will rebuild the songbook index
         # this permits us to change metadata (title etc) and have the book
@@ -169,6 +170,17 @@ class SongBook(object):
         if len(self._inputs):
             self.populate()
             self.renumber()
+
+    def render(self):
+        """
+        Renders the entire book by...
+        1. creating an output structure
+        2. rendering the files
+        3. generating a index page
+
+        """
+        # placeholder
+        pass
 
     @property
     def inputs(self):
