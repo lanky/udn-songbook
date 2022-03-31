@@ -4,6 +4,8 @@ version = "1.1.1"
 description = "songbook and songsheet management for songsheets in ukedown format"
 authors = ["Stuart Sears <stuart@sjsears.com>"]
 include = ["CHANGELOG.md", "tools"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/lanky/udn-songbook"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -21,6 +23,9 @@ pytest = "^6.2"
 pre-commit = "^2.16.0"
 black = "^22.3.0"
 flake8 = "^4.0.1"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/lanky/udn-songbook/issues"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
