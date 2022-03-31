@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "udn-songbook"
-version = "1.1.1"
+version = "1.1.2"
 description = "songbook and songsheet management for songsheets in ukedown format"
 authors = ["Stuart Sears <stuart@sjsears.com>"]
 include = ["CHANGELOG.md", "tools"]
