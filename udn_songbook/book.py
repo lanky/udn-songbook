@@ -67,6 +67,10 @@ class SongBook(object):
             self.populate()
             self.renumber()
 
+        self.song_template = song_template
+        self.index_template = index_template
+        self.template_paths = template_paths
+
     def __log(self, message: str, prio: int = logging.DEBUG, **kwargs):
         """
         emit a log message, or don't, if self.logger is None.
