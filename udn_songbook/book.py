@@ -127,7 +127,7 @@ class SongBook(object):
                     continue
                 if os.path.isdir(rp):
                     self.__log(f"Scanning dir {rp} for ukedown files")
-                    for rt, _dirs, files in os.walk(rp):
+                    for rt, _, files in os.walk(rp):
                         for f in fnmatch.filter(
                             [os.path.join(rt, f) for f in files], "*.udn"
                         ):
