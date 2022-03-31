@@ -3,14 +3,13 @@
 {{ song.title|default('') }} - {{ song.artist|default('') }}
 {% endblock %}
 {% block songheader %}
-<h1 class="title" id="title_{{ song.id }}">{{ song.title|default('') }} - {{ song.artist|default('') }}</h1>
+<h1 class="title" id="title_{{ '%02d' % song.id }}">{{ song.title|default('') }} - {{ song.artist|default('') }}</h1>
 {% endblock %}
 
 {% block content %}
 {{ song.body }}
 {% endblock %}
-<!-- show_diagrams: {{ show_diagrams }} -->
-{% if show_diagrams %}
+{% if diagrams %}
   {% if song.chords|length > 10 %}
     {% block overflow %}
       {% for chord in song.chords[10:] %}

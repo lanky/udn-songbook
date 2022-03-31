@@ -10,13 +10,13 @@
   <link rel="stylesheet" type="text/css" href="{{ css_path | default('../css') }}/{{ song.stylesheet|default('pdf.css') }}" />
   {% block localstyles %}
   <style type="text/css">
-  {% if not show_chords %}
+  {% if not chords %}
     .chord { display: none; }
   {% endif %}
-  {% if not show_notes %}
+  {% if not notes %}
     .notes { display: none; }
   {% endif %}
-  {% if not show_diagrams -%}
+  {% if not diagrams -%}
     .chords { display: none; }
     .overflow { display: none; }
   {% endif %}
@@ -34,7 +34,7 @@
 <body>
   <div class="header">{% block songheader %}{% endblock %}</div>
   <div class="content">{% block content %}{% endblock %}</div>
-  {% if show_diagrams %}
+  {% if not hide_diagrams %}
     {% if song.chords|length  > 10 %}
   <div class="overflow">{% block overflow %}{% endblock %}</div>
     {% endif %}
@@ -43,4 +43,3 @@
   <div class="footer">{% block footer %}{% endblock %}</div>
 </body>
 </html>
-
