@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "udn-songbook"
-version = "1.1.0"
+version = "1.1.1"
 description = "songbook and songsheet management for songsheets in ukedown format"
 authors = ["Stuart Sears <stuart@sjsears.com>"]
 
@@ -9,7 +9,7 @@ python = "^3.8"
 ukedown = "^2.0.0"
 beautifulsoup4 = "^4.9.3"
 PyYAML = ">= 5"
-WeasyPrint = "^53.4"
+WeasyPrint = ">= 53.4"
 Markdown = "^3.3.4"
 Jinja2 = "^3.0.1"
 lxml = "^4.6.4"
@@ -18,7 +18,7 @@ pychord = "^1.0.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
 pre-commit = "^2.16.0"
-black = "^21.11b1"
+black = "^22.3.0"
 flake8 = "^4.0.1"
 
 [build-system]
