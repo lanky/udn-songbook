@@ -3,3 +3,4 @@ ukedown
 bs4
 jinja2
 weasyprint
+poetry
