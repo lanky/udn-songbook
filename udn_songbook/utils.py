@@ -28,6 +28,8 @@ def safe_filename(filename: str) -> str:
     removes the following characters from filenames:
 
     """
-    tt = {ord(char): "_" for char in punctuation if char not in ["-", "_", "."]}
+    tt = {ord(char): "_" for char in punctuation if char not in ["#", "-", "_", "."]}
+    # this replaces '#' though, so escape that.
+    tt.update({ord("#"): "_sharp_"})
 
     return re.sub(r"_+", r"_", filename.translate(tt))
