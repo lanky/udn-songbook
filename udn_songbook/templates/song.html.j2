@@ -10,16 +10,17 @@
 {{ song.body }}
 {% endblock %}
 {% if diagrams %}
+  {# song.chords is now a list of pychord.Chord objects, hence the crd.chord code #}
   {% if song.chords|length > 10 %}
     {% block overflow %}
-      {% for chord in song.chords[10:] %}
-<article class="chord_diagram"> {% include 'svg/%s.svg'|format(chord|safe_name) %} </article>
+      {% for crd in song.chords[10:] %}
+<article class="chord_diagram"> {% include 'svg/%s.svg'|format(crd.chord|safe_name) %} </article>
       {% endfor %}
     {% endblock %}
   {% endif %}
   {% block chords %}
-    {% for chord in song.chords[:10] %}
-<article class="chord_diagram"> {% include 'svg/%s.svg'|format(chord|safe_name) %} </article>
+    {% for crd in song.chords[:10] %}
+<article class="chord_diagram"> {% include 'svg/%s.svg'|format(crd.chord|safe_name) %} </article>
     {% endfor %}
   {% endblock %}
 {% else %}
