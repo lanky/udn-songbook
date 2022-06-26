@@ -18,11 +18,9 @@ import jinja2
 import markdown
 
 # HTML processing, rendering and manipulation
-import ukedown.udn
 import yaml
 from bs4 import BeautifulSoup as bs
 from pychord import Chord
-from ukedown import patterns
 
 from .filters import custom_filters
 from .utils import safe_filename
