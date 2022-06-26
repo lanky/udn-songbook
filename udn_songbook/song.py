@@ -319,7 +319,7 @@ class Song(object):
 
         return jinja_env
 
-    def render(
+    def html(
         self,
         environment: Optional[jinja2.Environment] = None,
         template: str = "song.html.j2",
