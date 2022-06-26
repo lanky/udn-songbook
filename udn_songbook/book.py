@@ -175,7 +175,7 @@ class SongBook(object):
             self.populate()
             self.renumber()
 
-    def render(self):
+    def html(self, **kwargs):
         """
         Renders the entire book by...
         1. creating an output structure
@@ -184,6 +184,15 @@ class SongBook(object):
 
         """
         # placeholder
+        pass
+
+    def pdf(self, destfile: str, **kwargs):
+        """
+        Renders the whole book as a PDF
+
+        Essentially, renders each page as a PDF doc,
+        renders an index page with links to the other entries
+        """
         pass
 
     @property
