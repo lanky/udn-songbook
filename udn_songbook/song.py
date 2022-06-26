@@ -14,6 +14,7 @@ from typing import IO, Optional, Union
 
 # path manipulation
 from pathlib import Path
+
 import jinja2
 import markdown
 
@@ -22,10 +23,14 @@ import yaml
 from bs4 import BeautifulSoup as bs
 from pychord import Chord
 
+# PDF rendering
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
+
+# jinja filters and general utils
 from .filters import custom_filters
 from .utils import safe_filename
 
-# installed directory is os.path.dirname(os.path.realpath(__file__))
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
 CHORD = r"\(([A-G][adgijmnsu0-9#b\/A-G]*)([*\+])?\)"
@@ -81,7 +86,8 @@ class Song(object):
         self._mod_time = None
         self._index_entry = None
         self._id = 0
-
+        self.styles_dir = os.path.join(os.path.dirname(__file__), "stylesheets")
+        self.location = os.path.dirname(__file__)
         if hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
@@ -338,7 +344,9 @@ class Song(object):
         tpl = environment.get_template(template)
         return tpl.render(songbook={}, song=self, **context)
 
-    def pdf(self, stylesheet: str = "pdf.css"):
+    def pdf(
+        self, stylesheet: str = "pdf.css", destfile: Optional[str] = None, **context
+    ):
         """
         Generate a PDF songsheet from this song
         This will require weasyprint and a stylesheet
@@ -346,8 +354,59 @@ class Song(object):
         Stylesheets are loaded from the udn_songbook installation dir
         by default, but you can provide a path to a stylesheet of your
         choice
+
+        KWargs:
+            stylesheet(str): name of, or path to stylesheet
+            destfile(str): output file, if needed
+            context: dict of options to the template
+
+        Context here is essentially variables supported by the built-in templates.
+        If you use your own templates, adjust accordingly
+        For the built-in template this means at least the following, which
+        control inline CSS in the rendered HTML. All currently default to False.
+
+        chords(bool)    - show inline chord names
+        diagrams(bool)  - show chord diagrams(WIP)
+        overflow(bool)  - show chord diagram overflow (WIP)
+        notes(bool)     - show performance notes
+
+        NB at this time, chord diagrams are not generated - this will use the
+        external python-fretboard diagram library
         """
-        pass
+        # try the stylesheet provided, as follows:
+        # load it as an absolute path
+        # load it from the included stylesheets
+        # fall back to the default "pdf.css"
+
+        stylesdir = os.path.join(self.location, "stylesheets")
+
+        fontcfg = FontConfiguration()
+        # figure out the stylesheet location
+        styles = None
+        for sheet in [
+            os.path.realpath(stylesheet),
+            os.path.join(stylesdir, stylesheet),
+        ]:
+            if os.path.exists(sheet):
+                styles = CSS(filename=sheet, font_config=fontcfg)
+                break
+        if styles is None:
+            styles = CSS(
+                filename=os.path.join(stylesdir, "pdf.css"), font_config=fontcfg
+            )
+
+        content = HTML(string=self.html(**context))
+        pdfdoc = content.render(
+            stylesheets=[styles],
+            presentational_hints=True,
+            font_config=fontcfg,
+            optimize_size=("fonts", "images"),
+        )
+
+        if destfile is not None:
+            pdfdoc.write_pdf(target=Path(destfile))
+        else:
+            return pdfdoc
 
     def transpose(self, semitones: int):
         """
