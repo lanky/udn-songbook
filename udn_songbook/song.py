@@ -12,6 +12,8 @@ import re
 # for type hinting
 from typing import IO, Optional, Union
 
+# path manipulation
+from pathlib import Path
 import jinja2
 import markdown
 
@@ -87,7 +89,7 @@ class Song(object):
             # or another class that implements 'read'
             self._markup = src.read()
             if hasattr(src, "name"):
-                self._filename = src.name
+                self._filename = Path(src.name)
             else:
                 self._filename = None
             self._fsize = len(src.read())
@@ -96,7 +98,7 @@ class Song(object):
             # This is the most common use case
             self.__load(src)
             self._source = src
-            self._filename = os.path.basename(src)
+            self._filename = Path(os.path.basename(src))
             self._fsize = os.path.getsize(src)
             #
         else:
@@ -435,7 +437,7 @@ class Song(object):
 
     @filename.setter
     def filename(self, path):
-        self._filename = path
+        self._filename = Path(path)
 
     @property
     def artist(self):
