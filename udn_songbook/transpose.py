@@ -58,6 +58,7 @@ def main(opts: argparse.Namespace) -> None:
     """
     Main script entrypoint
     """
+    opts = parse_cmdline(sys.argv[1:])
 
     for fname in opts.filenames:
         s = Song(fname)
@@ -74,5 +75,4 @@ def main(opts: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    opts = parse_cmdline(sys.argv[1:])
-    main(opts)
+    main()
