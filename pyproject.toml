@@ -23,6 +23,7 @@ lxml = "^4.8.0"
 pychord = "^1.0.0"
 dynaconf = "^3.1.12"
 more-itertools = "^9.1.0"
+bs4 = "^0.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
