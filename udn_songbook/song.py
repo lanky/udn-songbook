@@ -419,7 +419,9 @@ class Song(object):
         self._chords
         self._chord_locations
 
-
+        Args:
+            semitones(int): number of semitones to transpose by
+                negative to tranpose down
         """
         # take a copy to transpose, as the transposition is an in-place
         # alteration of chord objects
@@ -433,6 +435,9 @@ class Song(object):
             transposed.append(
                 CRDPATT.sub(f"({crd.chord}{tail})", tmkup.read(end - tmkup.tell()))
             )
+        # now append the rest of the markup, otherwise we lose anything after the last
+        # chord
+        transposed.append(tmkup.read())
 
         # alter the markup in place
         self._markup = "".join(transposed)
