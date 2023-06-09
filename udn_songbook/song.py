@@ -342,7 +342,7 @@ class Song(object):
             environment = self.__get_render_env()
 
         tpl = environment.get_template(template)
-        return tpl.render(songbook={}, song=self, **context)
+        return tpl.render(songbook={}, song=self, output="html", **context)
 
     def pdf(
         self, stylesheet: str = "pdf.css", destfile: Optional[str] = None, **context
