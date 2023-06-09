@@ -63,7 +63,7 @@ class Song(object):
 
         Kwargs:
             anything can be customised, most attributes/properties are
-            auto-generated, but we sometimes need to override them
+            auto-generated, but we sometimes need to override them.
             Those listed below are commonly-used properties.
             These can also be parsed out of the songsheet itself
             using metadata markup
@@ -79,7 +79,6 @@ class Song(object):
                              can be overridden at the songbook level
             id(int):         page number, used as part of the "id" attribute on
                              headers
-
         """
         self._checksum = None
         self._load_time = datetime.datetime.now()
@@ -452,6 +451,9 @@ class Song(object):
         """
         Save an edited song back to disk. If path is None, will use the
         original filename (self.sourcefile)
+
+        KWArgs:
+            path(str): path to output file, if not in-place
         """
 
         # did we provide an output file?
