@@ -108,14 +108,14 @@ class Song(object):
             # presume we've been given content
             self._markup = src
             self._fsize = len(src)
-
-        # does nothing yet
-        self._filename = src
-        self.__parse(markup=self._markup)
         # arbitrary metadata, some of which will have meaning
         self._meta = {}
         # tags are separate
         self._tags = set([])
+
+        # does nothing yet
+        self._filename = src
+        self.__parse(markup=self._markup)
 
         # update with any parameters...
         for key, val in kwargs.items():
