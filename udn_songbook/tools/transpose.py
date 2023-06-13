@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 import argparse
-import os
 import sys
 from typing import List
 
-from udn_songbook import Song
+from .song import Song
 
 """
 A tool using the `udn_songbook` mechanisms to transpose songs by a given number of semitones
@@ -16,8 +15,9 @@ def parse_cmdline(argv: List[str] = []) -> argparse.Namespace:
     """
     process commandline options and arguments
     """
-    desc = """A tool using the `udn_songbook` toolset to transpose ukedown songsheets by
-a given number of semitones. Can overwrite existing files if you want it to.
+    desc = """A tool using the `udn_songbook` toolset to transpose ukedown 
+    songsheets by a given number of semitones.
+    Can overwrite existing files if you want it to.
     """
     parser = argparse.ArgumentParser(description=desc)
 
@@ -33,17 +33,19 @@ a given number of semitones. Can overwrite existing files if you want it to.
     parser.add_argument(
         "-o",
         "--output",
-        help="output filename, will dump to console if not specified. Will not work with more than one inputfile, for hopefully obvious reasons",
+        help="output filename, will dump to stdout` if not specified."
+        "Will not work with more than one inputfile, for hopefully obvious reasons",
     )
     parser.add_argument(
         "-i",
         "--in-place",
         action="store_true",
         default=False,
-        help="overwrite the input file with the transposed version. Use this only if you are sure you want to",
+        help="overwrite the input file with the transposed version. "
+        "Use this only if you are sure you want to",
     )
 
-    opts = parser.parse_args()
+    opts = parser.parse_args(argv)
 
     if opts.output and len(opts.filenames) > 1:
         raise argparse.ArgumentError(
@@ -54,10 +56,11 @@ a given number of semitones. Can overwrite existing files if you want it to.
     return opts
 
 
-def main(opts: argparse.Namespace) -> None:
+def main():
     """
     Main script entrypoint
     """
+    opts = parse_cmdline(sys.argv[1:])
 
     for fname in opts.filenames:
         s = Song(fname)
@@ -74,5 +77,4 @@ def main(opts: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    opts = parse_cmdline(sys.argv[1:])
-    main(opts)
+    main()

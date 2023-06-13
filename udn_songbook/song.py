@@ -12,20 +12,25 @@ import re
 # for type hinting
 from typing import IO, Optional, Union
 
+# path manipulation
+from pathlib import Path
+
 import jinja2
 import markdown
 
 # HTML processing, rendering and manipulation
-import ukedown.udn
 import yaml
 from bs4 import BeautifulSoup as bs
 from pychord import Chord
-from ukedown import patterns
 
+# PDF rendering
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
+
+# jinja filters and general utils
 from .filters import custom_filters
 from .utils import safe_filename
 
-# installed directory is os.path.dirname(os.path.realpath(__file__))
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
 CHORD = r"\(([A-G][adgijmnsu0-9#b\/A-G]*)([*\+])?\)"
@@ -58,7 +63,7 @@ class Song(object):
 
         Kwargs:
             anything can be customised, most attributes/properties are
-            auto-generated, but we sometimes need to override them
+            auto-generated, but we sometimes need to override them.
             Those listed below are commonly-used properties.
             These can also be parsed out of the songsheet itself
             using metadata markup
@@ -74,20 +79,20 @@ class Song(object):
                              can be overridden at the songbook level
             id(int):         page number, used as part of the "id" attribute on
                              headers
-
         """
         self._checksum = None
         self._load_time = datetime.datetime.now()
         self._mod_time = None
         self._index_entry = None
         self._id = 0
-
+        self.styles_dir = os.path.join(os.path.dirname(__file__), "stylesheets")
+        self.location = os.path.dirname(__file__)
         if hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
             self._markup = src.read()
             if hasattr(src, "name"):
-                self._filename = src.name
+                self._filename = Path(src.name)
             else:
                 self._filename = None
             self._fsize = len(src.read())
@@ -96,21 +101,21 @@ class Song(object):
             # This is the most common use case
             self.__load(src)
             self._source = src
-            self._filename = os.path.basename(src)
+            self._filename = Path(os.path.basename(src))
             self._fsize = os.path.getsize(src)
             #
         else:
             # presume we've been given content
             self._markup = src
             self._fsize = len(src)
-
-        # does nothing yet
-        self._filename = src
-        self.__parse(markup=self._markup)
         # arbitrary metadata, some of which will have meaning
         self._meta = {}
         # tags are separate
         self._tags = set([])
+
+        # does nothing yet
+        self._filename = src
+        self.__parse(markup=self._markup)
 
         # update with any parameters...
         for key, val in kwargs.items():
@@ -145,7 +150,7 @@ class Song(object):
             self.fsize(int): size of input in bytes.
         """
         try:
-            with codecs.open(sourcefile, mode="r", encoding="utf-8") as src:
+            with open(sourcefile, mode="r", encoding="utf-8") as src:
                 self._markup = src.read()
                 self._mod_time = datetime.datetime.fromtimestamp(
                     os.path.getmtime(sourcefile)
@@ -278,7 +283,8 @@ class Song(object):
             except ValueError:
                 # raised when this is not a recognised chord
                 print(
-                    f"Unable to parse chord {m.match} at position {m.start()} in song {self.filename}"
+                    f"""Unable to parse chord {m.match} at position {m.start()} 
+                        in song {self.filename}"""
                 )
                 raise
 
@@ -313,7 +319,7 @@ class Song(object):
 
         return jinja_env
 
-    def render(
+    def html(
         self,
         environment: Optional[jinja2.Environment] = None,
         template: str = "song.html.j2",
@@ -336,9 +342,11 @@ class Song(object):
             environment = self.__get_render_env()
 
         tpl = environment.get_template(template)
-        return tpl.render(songbook={}, song=self, **context)
+        return tpl.render(songbook={}, song=self, output="html", **context)
 
-    def pdf(self, stylesheet: str = "pdf.css"):
+    def pdf(
+        self, stylesheet: str = "pdf.css", destfile: Optional[str] = None, **context
+    ):
         """
         Generate a PDF songsheet from this song
         This will require weasyprint and a stylesheet
@@ -346,8 +354,59 @@ class Song(object):
         Stylesheets are loaded from the udn_songbook installation dir
         by default, but you can provide a path to a stylesheet of your
         choice
+
+        KWargs:
+            stylesheet(str): name of, or path to stylesheet
+            destfile(str): output file, if needed
+            context: dict of options to the template
+
+        Context here is essentially variables supported by the built-in templates.
+        If you use your own templates, adjust accordingly
+        For the built-in template this means at least the following, which
+        control inline CSS in the rendered HTML. All currently default to False.
+
+        chords(bool)    - show inline chord names
+        diagrams(bool)  - show chord diagrams(WIP)
+        overflow(bool)  - show chord diagram overflow (WIP)
+        notes(bool)     - show performance notes
+
+        NB at this time, chord diagrams are not generated - this will use the
+        external python-fretboard diagram library
         """
-        pass
+        # try the stylesheet provided, as follows:
+        # load it as an absolute path
+        # load it from the included stylesheets
+        # fall back to the default "pdf.css"
+
+        stylesdir = os.path.join(self.location, "stylesheets")
+
+        fontcfg = FontConfiguration()
+        # figure out the stylesheet location
+        styles = None
+        for sheet in [
+            os.path.realpath(stylesheet),
+            os.path.join(stylesdir, stylesheet),
+        ]:
+            if os.path.exists(sheet):
+                styles = CSS(filename=sheet, font_config=fontcfg)
+                break
+        if styles is None:
+            styles = CSS(
+                filename=os.path.join(stylesdir, "pdf.css"), font_config=fontcfg
+            )
+
+        content = HTML(string=self.html(**context))
+        pdfdoc = content.render(
+            stylesheets=[styles],
+            presentational_hints=True,
+            font_config=fontcfg,
+            optimize_size=("fonts", "images"),
+        )
+
+        if destfile is not None:
+            pdfdoc.write_pdf(target=Path(destfile))
+        else:
+            return pdfdoc
 
     def transpose(self, semitones: int):
         """
@@ -360,7 +419,9 @@ class Song(object):
         self._chords
         self._chord_locations
 
-
+        Args:
+            semitones(int): number of semitones to transpose by
+                negative to tranpose down
         """
         # take a copy to transpose, as the transposition is an in-place
         # alteration of chord objects
@@ -374,6 +435,9 @@ class Song(object):
             transposed.append(
                 CRDPATT.sub(f"({crd.chord}{tail})", tmkup.read(end - tmkup.tell()))
             )
+        # now append the rest of the markup, otherwise we lose anything after the last
+        # chord
+        transposed.append(tmkup.read())
 
         # alter the markup in place
         self._markup = "".join(transposed)
@@ -388,6 +452,9 @@ class Song(object):
         """
         Save an edited song back to disk. If path is None, will use the
         original filename (self.sourcefile)
+
+        KWArgs:
+            path(str): path to output file, if not in-place
         """
 
         # did we provide an output file?
@@ -435,7 +502,7 @@ class Song(object):
 
     @filename.setter
     def filename(self, path):
-        self._filename = path
+        self._filename = Path(path)
 
     @property
     def artist(self):
