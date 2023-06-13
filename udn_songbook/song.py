@@ -150,7 +150,7 @@ class Song(object):
             self.fsize(int): size of input in bytes.
         """
         try:
-            with codecs.open(sourcefile, mode="r", encoding="utf-8") as src:
+            with open(sourcefile, mode="r", encoding="utf-8") as src:
                 self._markup = src.read()
                 self._mod_time = datetime.datetime.fromtimestamp(
                     os.path.getmtime(sourcefile)
