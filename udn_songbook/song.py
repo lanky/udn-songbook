@@ -283,7 +283,8 @@ class Song(object):
             except ValueError:
                 # raised when this is not a recognised chord
                 print(
-                    f"Unable to parse chord {m.match} at position {m.start()} in song {self.filename}"
+                    f"""Unable to parse chord {m.match} at position {m.start()} 
+                        in song {self.filename}"""
                 )
                 raise
 
