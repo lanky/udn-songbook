@@ -28,13 +28,26 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--html",
+        "-f",
+        "--force",
         action="store_true",
         default=False,
-        help="Create a songsheet in HTML format, rather than the default PDF",
+        help="""Overwrite existing output files without warning.
+                Will refuse to do so at all without this.""",
     )
 
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="Actually tell me what is being done",
+    )
+
+
+    outgrp = parser.add_argument_group("Customised Output", "Options for changing default output")
+
+    outgrp.add_argument(
         "--singers",
         action="store_false",
         default=True,
@@ -42,12 +55,28 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
         help="Generate a singer's sheet (no chords)",
     )
 
+    outgrp.add_argument(
+        "--html",
+        action="store_true",
+        default=False,
+        help="Create a songsheet in HTML format, rather than the default PDF",
+    )
+
+    outgrp.add_argument(
+        "-t",
+        "--transpose",
+        type=int,
+        help="transpose song by this many semitones before rendering. Can be negative",
+    )
+
     opts = parser.parse_args(argv)
+
+    opts.filename = Path(opts.filename)
 
     if opts.output:
         opts.output = Path(opts.output)
     else:
-        opts.output = (
+        opts.output = Path(
             Path(opts.filename).with_suffix(".html" if opts.html else ".pdf").name
         )
 
@@ -60,11 +89,19 @@ def main():
     """
     opts = parse_cmdline(sys.argv[1:])
 
-    song = Song(Path(opts.filename))
+    song = Song(opts.filename)
 
-    if opts.output.exists():
+    if opts.transpose:
+        if opts.verbose:
+            print(f"transposing song by {opts.transpose} semitones")
+        song.transpose(opts.transpose)
+
+    if opts.output.exists() and not opts.force:
         print(f"output file {opts.output} already exists")
         sys.exit(1)
+
+    if opts.verbose:
+        print(f"Writing output to {opts.output}")
 
     if opts.html:
         with open(opts.output, "w") as dest:
