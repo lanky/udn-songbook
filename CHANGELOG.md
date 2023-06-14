@@ -2,6 +2,10 @@
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.1.6
+
+- Adds README to project files for PyPi
+
 ## 1.1.5
 
 - rename udn_render to udn_songsheet (script entry point)
