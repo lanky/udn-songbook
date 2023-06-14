@@ -2,6 +2,13 @@
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.1.7
+
+- README updated with new udn_songbook.Song features
+
+- BUGFIX: default metadata to empty dict if not present in songsheet
+- BUGFIX: use absolute import for Song in transpose.py
+
 ## 1.1.6
 
 - Adds README to project files for PyPi
