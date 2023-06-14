@@ -199,7 +199,10 @@ class Song(object):
             else:
                 content.append(line)
         self._markup = "\n".join(content)
-        self._meta = yaml.safe_load("\n".join(metadata))
+        if len(metadata):
+            self._meta = yaml.safe_load("\n".join(metadata))
+        else:
+            self._meta = {}
 
     def __parse(self, **kwargs):
         """
