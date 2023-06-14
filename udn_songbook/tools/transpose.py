@@ -4,7 +4,7 @@ import argparse
 import sys
 from typing import List
 
-from .song import Song
+from udn_songbook import Song
 
 """
 A tool using the `udn_songbook` mechanisms to transpose songs by a given number of semitones
