@@ -2,6 +2,14 @@
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.1.8
+
+- Fix template for index generation
+- Add latest CSS from ukebook-md
+- Fix singers options in makesheet
+- Unpunctuate song._index_entry for better sorting
+- Rename default stylesheet to 'portrait.css'
+
 ## 1.1.7
 
 - README updated with new udn_songbook.Song features
