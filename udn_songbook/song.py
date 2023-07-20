@@ -29,7 +29,7 @@ from weasyprint.text.fonts import FontConfiguration
 
 # jinja filters and general utils
 from .filters import custom_filters
-from .utils import safe_filename
+from .utils import unpunctuate, safe_filename
 
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
@@ -85,6 +85,7 @@ class Song(object):
         self._mod_time = None
         self._index_entry = None
         self._id = 0
+        self._sort_name = ""
         self.styles_dir = os.path.join(os.path.dirname(__file__), "stylesheets")
         self.location = os.path.dirname(__file__)
         if hasattr(src, "read"):
@@ -122,10 +123,10 @@ class Song(object):
             setattr(self, key, val)
 
         if self._filename is None:
-            self._filename = ("{0.title}_-_{0.artist}.udn".format(self)).lower()
+            self._filename = f"{self.title}_-_{self.artist}.udn".lower()
 
         if self._index_entry is None:
-            self._index_entry = "{0.title} - {0.artist}".format(self)
+            self._index_entry = f"{unpunctuate(self.title)} - {self.artist}"
 
         self.__checksum()
 

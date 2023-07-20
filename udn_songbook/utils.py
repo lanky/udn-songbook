@@ -21,6 +21,16 @@ def make_dir(destdir: str, logger: Union[logging.Logger, None]):
             logger.exception(f"Unable to create output dir {E.filename} - {E.strerror}")
             raise
 
+def unpunctuate(name: str, replacement: str = "") -> str:
+    """
+    Simply removes punctuation from the given name, for ease of sorting.
+    Args:
+        name(str): the name you want to unpunctuate
+        replacement(str): what to replace punctuation with.
+    """
+    TRANS = {ord(char): replacement for char in punctuation}
+    return name.translate(TRANS)
+
 
 def safe_filename(filename: str) -> str:
     """
