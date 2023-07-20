@@ -44,14 +44,14 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
         help="Actually tell me what is being done",
     )
 
-
-    outgrp = parser.add_argument_group("Customised Output", "Options for changing default output")
+    outgrp = parser.add_argument_group(
+        "Customised Output", "Options for changing default output"
+    )
 
     outgrp.add_argument(
         "--singers",
-        action="store_false",
-        default=True,
-        dest="chords",
+        action="store_true",
+        default=False,
         help="Generate a singer's sheet (no chords)",
     )
 
@@ -80,6 +80,13 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
             Path(opts.filename).with_suffix(".html" if opts.html else ".pdf").name
         )
 
+    if opts.singers:
+        opts.chords = False
+        opts.notes = False
+    else:
+        opts.chords = True
+        opts.notes = True
+
     return opts
 
 
@@ -88,6 +95,7 @@ def main():
     Main functionality
     """
     opts = parse_cmdline(sys.argv[1:])
+    print(opts)
 
     song = Song(opts.filename)
 
@@ -105,9 +113,12 @@ def main():
 
     if opts.html:
         with open(opts.output, "w") as dest:
-            dest.write(song.html(standalone=True))
+            dest.write(
+                song.html(standalone=True, chords=opts.chords, notes=opts.notes)
+            )
+
     else:
-        song.pdf(destfile=opts.output, chords=opts.chords)
+        song.pdf(destfile=opts.output, chords=opts.chords, notes=opts.notes)
 
 
 if __name__ == "__main__":
