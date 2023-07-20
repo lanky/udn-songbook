@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" type="text/css" href="css/{{ book_css }}.css" />
+    <link rel="stylesheet" type="text/css" href="css/{{ stylesheet }}.css" />
     <title>{{ Songbook }}</title>
     <!-- # also import javascript stuff here if needed -->
 </head>
 <body>
-<div class="header" id="title_index"><h1>{{ song.book.title }} Index</h1></div>
+<div class="header" id="title_index"><h1>{{ songbook.title }} Index</h1></div>
 <div class="index">
-{% for song in songs %}
+{% for title, song in songbook.index.items() %}
     {% if output == "html" %}
         {% set target='songs/%s'| format(song.filename) %}
     {% else %}
