@@ -348,7 +348,7 @@ class Song(object):
         return tpl.render(songbook={}, song=self, output="html", **context)
 
     def pdf(
-        self, stylesheet: str = "pdf.css", destfile: Optional[str] = None, **context
+        self, stylesheet: str = "portrait.css", destfile: Optional[str] = None, **context
     ):
         """
         Generate a PDF songsheet from this song
@@ -379,7 +379,7 @@ class Song(object):
         # try the stylesheet provided, as follows:
         # load it as an absolute path
         # load it from the included stylesheets
-        # fall back to the default "pdf.css"
+        # fall back to the default "portrait.css"
 
         stylesdir = os.path.join(self.location, "stylesheets")
 
@@ -395,7 +395,7 @@ class Song(object):
                 break
         if styles is None:
             styles = CSS(
-                filename=os.path.join(stylesdir, "pdf.css"), font_config=fontcfg
+                filename=os.path.join(stylesdir, stylesheet), font_config=fontcfg
             )
 
         content = HTML(string=self.html(**context))
