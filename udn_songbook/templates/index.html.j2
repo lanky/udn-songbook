@@ -16,7 +16,7 @@
 <div class="index">
     {% for title, song in entries %}
     {% if outfmt == "html" %}
-    {% set target='songs/%s'| format(song.filename.with_suffix('html').name) %}
+    {% set target='songs/%s'| format(song.filename.with_suffix('.html').name) %}
     {% else %}
     {% set target='#title_%03d'| format(song.id) %}
     {% endif %}
