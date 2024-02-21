@@ -8,9 +8,10 @@ import logging
 import os
 from collections import OrderedDict
 from operator import itemgetter
+from pathlib import Path
 from typing import List, Union
 
-from . import song
+from udn_songbook import song
 
 # from glob import glob
 
