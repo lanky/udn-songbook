@@ -3,6 +3,8 @@ import argparse
 import sys
 from pathlib import Path
 from typing import List
+import datetime
+import shutil
 
 from udn_songbook import Song
 
@@ -105,8 +107,13 @@ def main():
         song.transpose(opts.transpose)
 
     if opts.output.exists() and not opts.force:
-        print(f"output file {opts.output} already exists")
-        sys.exit(1)
+        print(f"output file {opts.output} already exists, backing it up")
+        shutil.copyfile(
+            opts.output,
+            opts.output.with_suffix(
+                datetime.datetime.now().strftime(f"{opts.output.suffix}.%s")
+            ),
+        )
 
     if opts.verbose:
         print(f"Writing output to {opts.output}")
