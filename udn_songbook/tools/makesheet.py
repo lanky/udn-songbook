@@ -21,7 +21,7 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
     unless you specify a path to an output file.
     """
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=preamble)
     parser.add_argument("filename", help="path to a filename in UDN format")
     parser.add_argument(
         "-o",
@@ -35,7 +35,8 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
         action="store_true",
         default=False,
         help="""Overwrite existing output files without warning.
-                Will refuse to do so at all without this.""",
+                Will backup existing files with a timestamp suffix
+                if this is not specified.""",
     )
 
     parser.add_argument(
@@ -119,10 +120,8 @@ def main():
         print(f"Writing output to {opts.output}")
 
     if opts.html:
-        with open(opts.output, "w") as dest:
-            dest.write(
-                song.html(standalone=True, chords=opts.chords, notes=opts.notes)
-            )
+        with opts.output.open(mode="w") as dest:
+            dest.write(song.html(standalone=True, chords=opts.chords, notes=opts.notes))
 
     else:
         song.pdf(destfile=opts.output, chords=opts.chords, notes=opts.notes)
