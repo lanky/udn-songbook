@@ -83,8 +83,8 @@ class Song(object):
         self._index_entry = None
         self._id = 0
         self._sort_name = ""
-        self.styles_dir = os.path.join(os.path.dirname(__file__), "stylesheets")
-        self.location = os.path.dirname(__file__)
+        self.location = Path(__file__).parent
+        self.styles_dir = self.location / "stylesheets"
         if hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
@@ -94,16 +94,16 @@ class Song(object):
             else:
                 self._filename = None
             self._fsize = len(src.read())
-        elif os.path.exists(src):
+        elif Path(src).is_file():
             # did we pass a filename?
             # This is the most common use case
-            self.__load(src)
-            self._source = src
-            self._filename = Path(os.path.basename(src))
-            self._fsize = os.path.getsize(src)
+            self._filename = Path(src)
+            self.__load(self.filename)
+            self._fsize = self.filename.stat().st_size
             #
         else:
             # presume we've been given content
+            self._filename = None
             self._markup = src
             self._fsize = len(src)
         # arbitrary metadata, some of which will have meaning
@@ -115,12 +115,16 @@ class Song(object):
         self._filename = src
         self.__parse(markup=self._markup)
 
+        # set a default template (loaded from this package) if one was not provided
+        # (e.g. from a songbook containing this song)
+        self._template = kwargs.get("template", "song.html.j2")
+
         # update with any parameters...
         for key, val in kwargs.items():
             setattr(self, key, val)
 
         if self._filename is None:
-            self._filename = f"{self.title}_-_{self.artist}.udn".lower()
+            self._filename = Path(f"{self.title}_-_{self.artist}.udn".lower())
 
         if self._index_entry is None:
             self._index_entry = f"{unpunctuate(self.title)} - {self.artist}"
@@ -138,7 +142,7 @@ class Song(object):
 
     # other 'private' methods for use in __init__, mostly.
 
-    def __load(self, sourcefile: str):
+    def __load(self, sourcefile: Path):
         """
         utlity function to handle loading from a file-like object
 
@@ -148,12 +152,10 @@ class Song(object):
             self.fsize(int): size of input in bytes.
         """
         try:
-            with open(sourcefile, mode="r", encoding="utf-8") as src:
-                self._markup = src.read()
-                self._mod_time = datetime.datetime.fromtimestamp(
-                    os.path.getmtime(sourcefile)
-                )
-                self.fsize = os.path.getsize(sourcefile)
+            fileprops = sourcefile.stat()
+            self._markup = sourcefile.read_text(encoding="utf-8")
+            self._mod_time = datetime.datetime.fromtimestamp(fileprops.st_mtime)
+            self.fsize = fileprops.st_size
 
         except (IOError, OSError) as E:
             print("Unable to open input file {0.filename} ({0.strerror}".format(E))
@@ -323,7 +325,7 @@ class Song(object):
     def html(
         self,
         environment: Optional[jinja2.Environment] = None,
-        template: str = "song.html.j2",
+        template: Optional[str] = None,
         **context,
     ) -> str:
         """
@@ -346,7 +348,10 @@ class Song(object):
         return tpl.render(songbook={}, song=self, output="html", **context)
 
     def pdf(
-        self, stylesheet: str = "portrait.css", destfile: Optional[str] = None, **context
+        self,
+        stylesheet: str = "portrait.css",
+        destfile: Optional[str] = None,
+        **context,
     ):
         """
         Generate a PDF songsheet from this song
