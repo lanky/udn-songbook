@@ -2,15 +2,12 @@
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 
 # object-oriented wrapper around song objects
-import codecs
 import datetime
 import hashlib
 import io
 import os
 import re
 
-# for type hinting
-from typing import IO, Optional, Union
 
 # path manipulation
 from pathlib import Path
@@ -24,12 +21,12 @@ from bs4 import BeautifulSoup as bs
 from pychord import Chord
 
 # PDF rendering
-from weasyprint import HTML, CSS
+from weasyprint import CSS, HTML
 from weasyprint.text.fonts import FontConfiguration
 
 # jinja filters and general utils
 from .filters import custom_filters
-from .utils import unpunctuate, safe_filename
+from .utils import safe_filename, unpunctuate
 
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
@@ -48,7 +45,7 @@ class Song(object):
     scripts
     """
 
-    def __init__(self, src: Union[IO, str], **kwargs):
+    def __init__(self, src: Union[IO, str, Path], **kwargs):
         """
         construct our song object from a ukedown (markdown++) file
         Args:
