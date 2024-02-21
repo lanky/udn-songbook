@@ -305,12 +305,10 @@ class Song(object):
 
         """
         jinja_env = jinja2.Environment(
-            loader=jinja2.ChoiceLoader(
-                [
-                    jinja2.FileSystemLoader(templatedir),
-                    jinja2.PackageLoader("udn_songbook"),
-                ]
-            ),
+            loader=jinja2.ChoiceLoader([
+                jinja2.FileSystemLoader(templatedir),
+                jinja2.PackageLoader("udn_songbook"),
+            ]),
             trim_blocks=True,
             lstrip_blocks=True,
             keep_trailing_newline=True,
@@ -339,6 +337,9 @@ class Song(object):
             context(dict): key=val pairs to add to template context
 
         """
+        # use the passed template, if not fall back to the default
+        if template is None:
+            template = self.template
         # There are prettier ways to do this but this is simple and readable
         # if we provide a jinja environment (e.g. from a parent songbook), use it
         if environment is None:
@@ -613,3 +614,12 @@ class Song(object):
             self._index_entry = str(data)
         except TypeError:
             raise TypeError("Song IDs must be strings, or be convertible to strings")
+
+    @property
+    def template(self):
+        """Name of the template to render this song."""
+        return self._template
+
+    @template.setter
+    def template(self, value):
+        self._template = value
