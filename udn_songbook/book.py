@@ -31,6 +31,8 @@ class SongBook(object):
         template_paths: List[str] = [],
         song_template: str = "song.html.j2",
         index_template: str = "index.html.j2",
+        title: str = "My Songbook",
+        style: Path | List[Path] = [],
     ):
         """
         Create a songbook object from a list of inputs.
@@ -40,14 +42,24 @@ class SongBook(object):
         the ukedown markup. Duplicate index entries are not supported.
         If 2 songs are added with the same Title and Artist, the last one wins
 
-        Kwargs:
-            inputs(list[str]):   list of files or directories containing UDN files
-            logger(logging.Logger|None): where to log messages to.
-                                         If None, no logging is performed
-            template_paths(str): Paths to jinja2 template directories. These will take
-                                 precedence over internal templates where names clash.
-            song_template(str):  filename for jinja2 template for rendering Song objects
-            index_template(str): filename for jinja2 for rendering the index.
+        Template locations and filenames can be provided - there are defaults (included
+        in the package). The default names are in the function signature. Any templates
+        provided as arguments override the packaged ones.
+
+        CSS stylesheet filenames (as pathlib.Path objects) may be provided. If the
+        stylesheets depend on one another (as the default packaged ones do), then you
+        should provide them all as arguments.
+
+        Args:
+            inputs( list[str]):   list of files or directories containing UDN files
+            logger (logging.Logger | None): where to log messages to.
+            template_paths (str): Paths to jinja2 template directories.
+            song_template (str):  filename of jinja2 template for rendering Song objects
+            index_template (str): filename of jinja2 template for rendering the index.
+
+            title (str):          a title for the songbook, for use in templates
+            style (Path | list[Path]):     CSS stylesheet
+
         # to be added /managed, probably via dynaconf
         #    config(str):        filename for CSS and other configuration
         """
@@ -61,16 +73,18 @@ class SongBook(object):
         self.contents = []
         # index will actually be { 'title - artist' : song object }
         self._index = OrderedDict()
+        self.song_template = song_template
+        self.index_template = index_template
+        self.template_paths = template_paths
+        self._title = title
+        self._style = style
+        self._styles_dir = Path(__file__).parent / "stylesheets"
 
         # logger instance, if there is one.
         self._logger = logger
         if len(self._inputs):
             self.populate()
             self.renumber()
-
-        self.song_template = song_template
-        self.index_template = index_template
-        self.template_paths = template_paths
 
     def __log(self, message: str, prio: int = logging.DEBUG, **kwargs):
         """
@@ -100,7 +114,7 @@ class SongBook(object):
             songdata(str): path to a file (usually)
         """
         try:
-            s = song.Song(path)
+            s = song.Song(path, template=self.song_template)
             # add the song object to our content list
             self.contents.append(s)
             # add the chords it uses to our chords list
@@ -142,9 +156,9 @@ class SongBook(object):
         title and artist must be a unique combination.
         Although we could permit dupes I guess, depending on the book.
         """
-        self._index = OrderedDict(
-            {k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))}
-        )
+        self._index = OrderedDict({
+            k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))
+        })
 
     def renumber(self):
         """
@@ -176,7 +190,7 @@ class SongBook(object):
             self.populate()
             self.renumber()
 
-    def html(self, **kwargs):
+    def publish(self, publisher_class, *args, **kwargs):
         """
         Renders the entire book by...
         1. creating an output structure
@@ -184,17 +198,9 @@ class SongBook(object):
         3. generating a index page
 
         """
-        # placeholder
-        pass
+        self.publisher = publisher_class(*args, **kwargs)
 
-    def pdf(self, destfile: str, **kwargs):
-        """
-        Renders the whole book as a PDF
-
-        Essentially, renders each page as a PDF doc,
-        renders an index page with links to the other entries
-        """
-        pass
+        self.publisher.publish()
 
     @property
     def inputs(self):
@@ -203,3 +209,35 @@ class SongBook(object):
     @property
     def index(self):
         return self._index
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, title: str):
+        self._title = title
+
+    @property
+    def styles_dir(self):
+        return self._styles_dir
+
+    @styles_dir.setter
+    def styles_dir(self, data: Path):
+        if data.is_dir():
+            self._styles_dir = data
+        else:
+            raise ValueError(
+                "styles_dir must be a Path object, pointing to a directory"
+            )
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    def style(self, data: Path | List[Path]):
+        if isinstance(data, Path):
+            self._style = [data]
+        else:
+            self._style = data
