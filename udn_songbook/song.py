@@ -8,9 +8,11 @@ import io
 import os
 import re
 
-
 # path manipulation
 from pathlib import Path
+
+# for type hinting
+from typing import IO, Optional, Union
 
 import jinja2
 import markdown
