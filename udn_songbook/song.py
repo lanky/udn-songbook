@@ -113,8 +113,6 @@ class Song(object):
         # tags are separate
         self._tags = set([])
 
-        # does nothing yet
-        self._filename = src
         self.__parse(markup=self._markup)
 
         # set a default template (loaded from this package) if one was not provided
