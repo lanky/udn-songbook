@@ -25,6 +25,7 @@
     margin-top: 0.5em;
     margin-bottom: 0.5em;
     padding-bottom: 0.5em;
+    font-style: normal;
 }
 
 .section_header:before {
@@ -54,12 +55,26 @@
 }
 
 .notes:before {
-    content: "<";
+    content: "[";
 }
 
 .notes:after {
+    content: "]";
+}
+
+.singer {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.singer:before {
+    content: "<";
+}
+
+.singer:after {
     content: ">";
 }
+
 
 p {
     margin-top: 0.5em;
