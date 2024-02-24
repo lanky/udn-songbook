@@ -286,7 +286,7 @@ class Song(object):
             except ValueError:
                 # raised when this is not a recognised chord
                 print(
-                    f"""Unable to parse chord {m.match} at position {m.start()} 
+                    f"""Unable to parse chord {m.match} at position {m.start()}
                         in song {self.filename}"""
                 )
                 raise
@@ -305,10 +305,12 @@ class Song(object):
 
         """
         jinja_env = jinja2.Environment(
-            loader=jinja2.ChoiceLoader([
-                jinja2.FileSystemLoader(templatedir),
-                jinja2.PackageLoader("udn_songbook"),
-            ]),
+            loader=jinja2.ChoiceLoader(
+                [
+                    jinja2.FileSystemLoader(templatedir),
+                    jinja2.PackageLoader("udn_songbook"),
+                ]
+            ),
             trim_blocks=True,
             lstrip_blocks=True,
             keep_trailing_newline=True,
