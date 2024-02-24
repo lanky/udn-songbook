@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
+"""Class representing a songbook."""
 
 import fnmatch
 
@@ -17,11 +18,14 @@ from udn_songbook import song
 
 
 class SongBook(object):
-    """
-    Wrapper class representing a songbook, which is essentially an indexed list of
-    songsheets, in `ukedown` format, indexed on Title and Artist.
-    Duplicate songs are not supported - if you add more than one song with the same
-    Title & Artist, the last one seen will win. Order matters.
+    """Wrapper class representing a songbook.
+
+    A songbook is essentially an indexed list of Song objects, generated from
+    UDN-formatted files Songs are indeced on Title and Artist
+
+    Duplicate title/artist combinations are not supported - if you add more
+    than one song with the same Title & Artist, the last one seen will win.
+    Order matters.
     """
 
     def __init__(
@@ -34,8 +38,8 @@ class SongBook(object):
         title: str = "My Songbook",
         style: Path | List[Path] = [],
     ):
-        """
-        Create a songbook object from a list of inputs.
+        """Create a songbook object from a list of inputs.
+
         Inputs can be directories, too.
 
         Songs in a book are indexed on 'Title - Artist', which is parsed out of
@@ -87,8 +91,7 @@ class SongBook(object):
             self.renumber()
 
     def __log(self, message: str, prio: int = logging.DEBUG, **kwargs):
-        """
-        emit a log message, or don't, if self.logger is None.
+        """Emit a log message, or don't, if self.logger is None.
 
         presumes that self.logger is a logging.Logger instance
         with configured handlers, formats etc. No attempt is made to do
@@ -107,8 +110,7 @@ class SongBook(object):
             return
 
     def add_song(self, path: str):
-        """
-        add a song to the contents list and index
+        """Add a song to the contents list and index.
 
         Args:
             songdata(str): path to a file (usually)
@@ -128,9 +130,7 @@ class SongBook(object):
             raise
 
     def populate(self):
-        """
-        Reads in the content of any input directories, as Song objects
-        """
+        """Read in the content of any input directories, as Song objects."""
         for src in self._inputs:
             if os.path.exists(src):
                 rp = os.path.realpath(src)
@@ -151,26 +151,24 @@ class SongBook(object):
                 self.__log(f"cannot load from non-file/dir {src}", logging.ERROR)
 
     def collate(self):
-        """
-        reduce contents list to unique entries, indexed on title - artist
+        """Reduce contents list to unique entries, indexed on title - artist.
+
         title and artist must be a unique combination.
         Although we could permit dupes I guess, depending on the book.
         """
-        self._index = OrderedDict({
-            k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))
-        })
+        self._index = OrderedDict(
+            {k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))}
+        )
 
     def renumber(self):
-        """
-        renumber pages in a collated book
-        """
+        """Renumber pages in a collated book."""
         self.collate()
         for i, k in enumerate(self._index):
             self._index[k].id = i
 
     def update(self, inputs: List[str]):
-        """
-        replace entries in an existing songbook using the provided inputs
+        """Replace entries in an existing songbook using the provided inputs.
+
         This will regenerate the index
         """
         self.inputs.append(inputs)
@@ -178,8 +176,8 @@ class SongBook(object):
         self.renumber()
 
     def refresh(self):
-        """
-        reload all the current inputs (that have changed)
+        """Reload all the current inputs (that have changed).
+
         This will be a timestamp/checksumming/stat operation when I've
         written that part
         """
@@ -191,8 +189,9 @@ class SongBook(object):
             self.renumber()
 
     def publish(self, publisher_class, *args, **kwargs):
-        """
-        Renders the entire book by...
+        """Render the entire book.
+
+        Steps:
         1. creating an output structure
         2. rendering the files
         3. generating a index page
@@ -204,14 +203,17 @@ class SongBook(object):
 
     @property
     def inputs(self):
+        """Show the inputs used to build the book."""
         return self._inputs
 
     @property
     def index(self):
+        """Show the generated index."""
         return self._index
 
     @property
     def title(self):
+        """Show the book title."""
         return self._title
 
     @title.setter
@@ -220,6 +222,7 @@ class SongBook(object):
 
     @property
     def styles_dir(self):
+        """Show where our CSS files are."""
         return self._styles_dir
 
     @styles_dir.setter
@@ -233,6 +236,7 @@ class SongBook(object):
 
     @property
     def style(self):
+        """Show the primary stylesheet in use."""
         return self._style
 
     @style.setter
