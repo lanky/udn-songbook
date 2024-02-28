@@ -325,7 +325,8 @@ class Song(object):
     def html(
         self,
         environment: Optional[jinja2.Environment] = None,
-        template: Optional[str] = None,
+        template: str = "song.html.j2",
+        stylesheet: str = "portrait.css",
         **context,
     ) -> str:
         """
@@ -338,6 +339,9 @@ class Song(object):
             template(str): name of song template to look for
             context(dict): key=val pairs to add to template context
 
+        Context vars that can be used (template-dependent):
+            css_path(str): where are our stylesheets?
+            stylesheet(str): which stylesheet should we use (filename)?
         """
         # use the passed template, if not fall back to the default
         if template is None:
@@ -387,22 +391,17 @@ class Song(object):
         # load it from the included stylesheets
         # fall back to the default "portrait.css"
 
-        stylesdir = os.path.join(self.location, "stylesheets")
+        stylesdir = self.location / "stylesheets"
 
         fontcfg = FontConfiguration()
         # figure out the stylesheet location
         styles = None
-        for sheet in [
-            os.path.realpath(stylesheet),
-            os.path.join(stylesdir, stylesheet),
-        ]:
-            if os.path.exists(sheet):
+        for sheet in [stylesheet, stylesdir / stylesheet.name]:
+            if sheet.exists():
                 styles = CSS(filename=sheet, font_config=fontcfg)
                 break
         if styles is None:
-            styles = CSS(
-                filename=os.path.join(stylesdir, stylesheet), font_config=fontcfg
-            )
+            styles = CSS(filename=stylesdir / stylesheet, font_config=fontcfg)
 
         content = HTML(string=self.html(**context))
         pdfdoc = content.render(
@@ -457,7 +456,7 @@ class Song(object):
         # keep a record of our transposition
         self._meta["transposed"] = semitones
 
-    def save(self, path: str = None):
+    def save(self, path: Optional[Path] = None):
         """
         Save an edited song back to disk. If path is None, will use the
         original filename (self.sourcefile)
@@ -468,7 +467,7 @@ class Song(object):
 
         # did we provide an output file?
         if path is not None:
-            outdir, outfile = os.path.split(path)
+            dest = path
         # if not, use the current filename, if it exists
         elif self.sourcefile is not None:
             outdir, outfile = os.path.split(self.sourcefile)
