@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import datetime
+import shutil
 import sys
 from pathlib import Path
 from typing import List
-import datetime
-import shutil
 
 from udn_songbook import Song
 
@@ -19,9 +19,12 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
 
     Files are generated in your CWD (current working directory),
     unless you specify a path to an output file.
+
     """
 
-    parser = argparse.ArgumentParser(description=preamble)
+    parser = argparse.ArgumentParser(
+        description=preamble, formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("filename", help="path to a filename in UDN format")
     parser.add_argument(
         "-o",
@@ -45,6 +48,14 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
         action="store_true",
         default=False,
         help="Actually tell me what is being done",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--style",
+        type=Path,
+        help="""name of stylesheet to use for this songsheet.
+        Will use built-in syles unless you provide a path""",
     )
 
     outgrp = parser.add_argument_group(
@@ -86,9 +97,11 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
     if opts.singers:
         opts.chords = False
         opts.notes = False
+        opts.singer_notes = True
     else:
         opts.chords = True
         opts.notes = True
+        opts.singer_notes = False
 
     return opts
 
@@ -122,9 +135,26 @@ def main():
     if opts.html:
         with opts.output.open(mode="w") as dest:
             dest.write(song.html(standalone=True, chords=opts.chords, notes=opts.notes))
+        with open(opts.output, "w") as dest:
+            dest.write(
+                song.html(
+                    standalone=True,
+                    chords=opts.chords,
+                    notes=opts.notes,
+                    singer_notes=opts.singer_notes,
+                    css_dir=opts.style.parent,
+                    stylesheet=opts.style,
+                )
+            )
 
     else:
-        song.pdf(destfile=opts.output, chords=opts.chords, notes=opts.notes)
+        song.pdf(
+            destfile=opts.output,
+            chords=opts.chords,
+            notes=opts.notes,
+            singer_notes=opts.singer_notes,
+            styleheet=opts.style,
+        )
 
 
 if __name__ == "__main__":
