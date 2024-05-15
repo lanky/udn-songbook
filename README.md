@@ -50,19 +50,24 @@ from udn_songbook import SongBook
 mybook = SongBook(inputs=['directory1', 'directory2', 'someotherfile.udn'])
 ```
 
-Songbooks have an index auto-generated, and do not support mutiple songs with the same ID (which is essentially "Title - Artist").
+Songbooks have an index auto-generated, and do not support mutiple songs with the same ID (which is
+essentially "Title - Artist").
 
-If your inputs include multiple songs in this way, the last one imported will be used. So name them carefully.
+If your inputs include multiple songs in this way, the last one imported will be used. So name them
+carefully.
 
-A Songbook in this context is a collection of song objects with additional metadata, such as an index.
+A Songbook in this context is a collection of song objects with additional metadata, such as an
+index.
 
 ## Tools
 
 The pip package also installs 2 commandline tools, aimed at managing individual songsheets:
 
-`udn_transpose`, which allows in-place (or optionally to a new file) transposing of an existing  songsheet by an arbitrary number of semitones. The transposition is added to metadata
+`udn_transpose`, which allows in-place (or optionally to a new file) transposing of an existing
+songsheet by an arbitrary number of semitones. The transposition is added to metadata
 
-`udn_songsheet`, which renders a UDN songsheet to a file in either PDF (default) or HTML format. it also supports in-place transposition, without affecting the original input file.
+`udn_songsheet`, which renders a UDN songsheet to a file in either PDF (default) or HTML format. it
+also supports in-place transposition, without affecting the original input file.
 
 ## what you need to use this:
 
