@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Class-based wrapper representing a song."""
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 
 # object-oriented wrapper around song objects
@@ -12,7 +13,7 @@ import re
 from pathlib import Path
 
 # for type hinting
-from typing import IO, Optional, Union
+from typing import IO, Any, Dict, Optional, Union
 
 import jinja2
 import markdown
@@ -20,11 +21,11 @@ import markdown
 # HTML processing, rendering and manipulation
 import yaml
 from bs4 import BeautifulSoup as bs
-from pychord import Chord
+from pychord import Chord  # type: ignore
 
 # PDF rendering
-from weasyprint import CSS, HTML
-from weasyprint.text.fonts import FontConfiguration
+from weasyprint import CSS, HTML  # type: ignore
+from weasyprint.text.fonts import FontConfiguration  # type: ignore
 
 # jinja filters and general utils
 from .filters import custom_filters
@@ -38,9 +39,10 @@ CRDPATT = re.compile(CHORD)
 
 class Song(object):
     """
-    a Song object represents a song with associated methods
-    to generate output, summarise content etc
-    songs are instantiated from ukedown files
+    A Song object represents a song.
+
+    It has associated methods to generate output, summarise content etc
+    and is instantiated from a ukedown filename, an open file handle, or a string.
 
     This wrapper is intended to make it simpler to construct a DB model
     for this content, plus to take all this code out of any automation
@@ -49,7 +51,8 @@ class Song(object):
 
     def __init__(self, src: Union[IO, str, Path], **kwargs):
         """
-        construct our song object from a ukedown (markdown++) file
+        Construct our song object from a ukedown (markdown++) file.
+
         Args:
             src can be one of the following
             src(str):        ukedown content read from a file.
@@ -79,20 +82,20 @@ class Song(object):
             id(int):         page number, used as part of the "id" attribute on
                              headers
         """
-        self._checksum = None
-        self._load_time = datetime.datetime.now()
-        self._mod_time = None
-        self._index_entry = None
-        self._id = 0
-        self._sort_name = ""
-        self.location = Path(__file__).parent
-        self.styles_dir = self.location / "stylesheets"
+        self._checksum: str | None = None
+        self._load_time: datetime.datetime = datetime.datetime.now()
+        self._mod_time: datetime.datetime | None = None
+        self._index_entry: str | None = None
+        self._id: int = 0
+        self._sort_name: str = ""
+        self.location: Path = Path(__file__).parent
+        self.styles_dir: Path = self.location / "stylesheets"
         if hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
-            self._markup = src.read()
+            self._markup: str = src.read()
             if hasattr(src, "name"):
-                self._filename = Path(src.name)
+                self._filename: Optional[Path] = Path(src.name)
             else:
                 self._filename = None
             self._fsize = len(src.read())
@@ -109,7 +112,7 @@ class Song(object):
             self._markup = src
             self._fsize = len(src)
         # arbitrary metadata, some of which will have meaning
-        self._meta = {}
+        self._meta: Dict[str, Any] = {}
         # tags are separate
         self._tags = set([])
 
