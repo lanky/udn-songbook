@@ -1,6 +1,20 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+## 1.3.0
+- Add dynaconf and profile support
+- Docstrings everywhere
+- move to pathlib whereever possible
+- move to f-strings rather than str.format
+
+
+## 1.2.0
+- Add support for singers notes to template
+- Add style (.singer) for singers' notes
+- Docstringi, type hints and other linting updates
+- Switch to ruff for python pre-commit, update versions
+- remove unhelpful self._filename override
+- Force normal font-style on elements inside backing vox
 
 ## 1.1.8
 
