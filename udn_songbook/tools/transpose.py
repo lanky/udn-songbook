@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
+"""Transpose a song by an arbitrary number of semitones."""
+
 import argparse
 import sys
-from typing import List
+from pathlib import Path
 
 from udn_songbook import Song
 
-"""
-A tool using the `udn_songbook` mechanisms to transpose songs by a given number of semitones
-"""
 
-
-def parse_cmdline(argv: List[str] = []) -> argparse.Namespace:
-    """
-    process commandline options and arguments
-    """
-    desc = """A tool using the `udn_songbook` toolset to transpose ukedown 
+def parse_cmdline(argv: list[str] = []) -> argparse.Namespace:
+    """Process commandline options and arguments."""
+    desc = """A tool using the `udn_songbook` toolset to transpose ukedown
     songsheets by a given number of semitones.
     Can overwrite existing files if you want it to.
     """
     parser = argparse.ArgumentParser(description=desc)
 
     parser.add_argument(
-        "filenames", nargs="+", help="filename(s) in UDN(ukedown) format to transpose"
+        "filenames",
+        nargs="+",
+        type=Path,
+        help="filename(s) in UDN(ukedown) format to transpose",
     )
     parser.add_argument(
         "-t",
@@ -33,6 +32,7 @@ def parse_cmdline(argv: List[str] = []) -> argparse.Namespace:
     parser.add_argument(
         "-o",
         "--output",
+        type=Path,
         help="output filename, will dump to stdout` if not specified."
         "Will not work with more than one inputfile, for hopefully obvious reasons",
     )
@@ -49,7 +49,8 @@ def parse_cmdline(argv: List[str] = []) -> argparse.Namespace:
 
     if opts.output and len(opts.filenames) > 1:
         raise argparse.ArgumentError(
-            "Cannot use --output with more than one input file."
+            argument=opts.output,
+            message="Cannot use --output with more than one input file.",
         )
 
     # sanity checking to be added
@@ -57,9 +58,7 @@ def parse_cmdline(argv: List[str] = []) -> argparse.Namespace:
 
 
 def main():
-    """
-    Main script entrypoint
-    """
+    """Run all the things."""
     opts = parse_cmdline(sys.argv[1:])
 
     for fname in opts.filenames:
