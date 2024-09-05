@@ -7,7 +7,7 @@
   {% block head %}
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <!-- {{ songbook.stylesheet|default('none') }} -->
-  <link rel="stylesheet" type="text/css" href="{{ css_path | default('../css') }}/{{ song.stylesheet|default('pdf.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ css_dir | default('../css') }}/{{ stylesheet|default('portrait.css') }}" />
   {% block localstyles %}
   <style type="text/css">
   {% if not chords %}
