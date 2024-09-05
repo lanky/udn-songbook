@@ -6,7 +6,6 @@
 import datetime
 import hashlib
 import io
-import os
 import re
 
 # path manipulation
@@ -31,7 +30,7 @@ from .config import settings
 
 # jinja filters and general utils
 from .filters import custom_filters
-from .utils import safe_filename, unpunctuate
+from .utils import unpunctuate
 
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
@@ -64,6 +63,7 @@ class Song:
                              This should produce UTF-8 when read
                              (codecs.open is your friend)
             src(path):       path to a ukedown-formatted file to open and parse
+            kwargs:          key=value pairs, see below
 
         Kwargs:
             anything can be customised, most attributes/properties are
@@ -98,7 +98,7 @@ class Song:
             # or another class that implements 'read'
             self._markup: str = src.read()
             if hasattr(src, "name"):
-                self._filename: Optional[Path] = Path(src.name)
+                self._filename: Path | None = Path(src.name)
             else:
                 self._filename = None
             self._fsize = len(src.read())
@@ -112,12 +112,12 @@ class Song:
         else:
             # presume we've been given content
             self._filename = None
-            self._markup = src
-            self._fsize = len(src)
+            self._markup = src  # type: ignore
+            self._fsize = len(src)  # type: ignore
         # arbitrary metadata, some of which will have meaning
         self._meta: Dict[str, Any] = {}
         # tags are separate
-        self._tags = set([])
+        self._tags: set[str] = set([])
 
         self.__parse(markup=self._markup)
 
@@ -138,19 +138,21 @@ class Song:
         self.__checksum()
 
     def __unicode__(self):
+        """Get unicode string representation."""
         return self.songid
 
     def __str__(self):
+        """Get string representation."""
         return self.songid
 
     def __repr__(self):
+        """Show representation."""
         return f"<Song: {self.songid}>"
 
     # other 'private' methods for use in __init__, mostly.
 
     def __load(self, sourcefile: Path):
-        """
-        utlity function to handle loading from a file-like object
+        """Load udn content from a file.
 
         sets:
             self._markup(str): text content, amy include metadata
@@ -165,11 +167,12 @@ class Song:
 
         except OSError as E:
             print(f"Unable to open input file {E.filename} ({E.strerror}")
-            self._markup = None
+            self._markup = ""
 
     def __checksum(self):
-        """
-        Generate sha256 checksum of loaded content (checking for changes)
+        """Generate sha256 checksum of loaded content.
+
+        intended to use for change detection
 
         sets:
             self._checksum: sha256 hash of content
@@ -179,8 +182,8 @@ class Song:
         self._checksum = shasum.hexdigest()
 
     def __extract_meta(self, markup: Optional[str] = None, leader: str = ";"):
-        """
-        parse out metadata from file,
+        """Parse out metadata from file.
+
         This MUST be done before passing to markdown
         There doesn't have to be any metadata - should work regardless
 
@@ -211,9 +214,9 @@ class Song:
             self._meta = {}
 
     def __parse(self, **kwargs):
-        """
-        parses ukedown to set attrs and properties
-        processes metadata entries in file, converts markup content to HTML
+        """Parse ukedown to set attrs and properties.
+
+        Process metadata entries in file, convert markup content to HTML
 
         kwargs:
             properties to set on parsed object, usually passed in from __init__
@@ -234,8 +237,8 @@ class Song:
         self.__parse_chords()
 
     def __parse_markup(self):
-        """
-        Convert markup to HTML, set attributes
+        """Convert markup to HTML, set attributes.
+
         sets:
             self.title:   title (parsed from first line)
             self.artist:  Artist (parsed from first line)
@@ -268,9 +271,10 @@ class Song:
         self.body = "".join([str(x) for x in soup.body.contents]).strip()
 
     def __parse_chords(self):
-        """
-        Extract the chords from markup, not HTML. This determines their position
-        in the song and allows us to write code to transpose them.
+        """Extract the chords from markup, not HTML.
+
+        This determines their position in the song and allows
+        us to write code to transpose them.
 
         sets:
             self._chord_locations: nested list of chord, start position, end position
@@ -302,8 +306,7 @@ class Song:
         self._chords = chordlist
 
     def __get_render_env(self, templatedir: str = "") -> jinja2.Environment:
-        """
-        Initialises a jinja2 Environment for rendering songsheets
+        """Initialise a jinja2 Environment for rendering songsheets.
 
         This will load templates from a provided path (templatedir),
         or if this is not provided (or doesn't exist), from the
@@ -311,12 +314,10 @@ class Song:
 
         """
         jinja_env = jinja2.Environment(
-            loader=jinja2.ChoiceLoader(
-                [
-                    jinja2.FileSystemLoader(templatedir),
-                    jinja2.PackageLoader("udn_songbook"),
-                ]
-            ),
+            loader=jinja2.ChoiceLoader([
+                jinja2.FileSystemLoader(templatedir),
+                jinja2.PackageLoader("udn_songbook"),
+            ]),
             trim_blocks=True,
             lstrip_blocks=True,
             keep_trailing_newline=True,
@@ -336,8 +337,8 @@ class Song:
         profile: Optional[str] = None,
         **context,
     ) -> str:
-        """
-        Render HTML output using jinja templates.
+        """Render HTML output using jinja templates.
+
         This defaults to using the templates packaged with `udn_songbook` but you
         can override this with the `templatedir` and `template` parameters
 
@@ -380,9 +381,7 @@ class Song:
         profile: Optional[str] = None,
         **context,
     ):
-        """
-        Generate a PDF songsheet from this song
-        This will require weasyprint and a stylesheet
+        """Generate a PDF songsheet from this song.
 
         Stylesheets are loaded from the udn_songbook installation dir
         by default, but you can provide a path to a stylesheet of your
@@ -439,9 +438,7 @@ class Song:
             return pdfdoc
 
     def transpose(self, semitones: int):
-        """
-        shift all chords in the song by the given number of semitones
-        and reparse content
+        """Transpose all chords in the song by the given number of semitones.
 
         This will alter the following attributes:
 
@@ -479,29 +476,26 @@ class Song:
         self._meta["transposed"] = semitones
 
     def save(self, path: Optional[Path] = None):
-        """
-        Save an edited song back to disk. If path is None, will use the
+        """Save an edited song back to disk.
+
+        If path is None, will use the
         original filename (self.sourcefile)
 
-        KWArgs:
+        Args:
             path(str): path to output file, if not in-place
         """
-
         # did we provide an output file?
         if path is not None:
-            dest = path
+            outfile = path
         # if not, use the current filename, if it exists
-        elif self.sourcefile is not None:
-            outdir, outfile = os.path.split(self.sourcefile)
+        elif self._filename is not None:
+            outfile = Path(self._filename)
         else:
             # create a new filename usingtitle and artist
-            outdir = os.curdir
-            outfile = f"{self.title} - {self.artist}.udn"
-
-        dest = os.path.join(outdir, safe_filename(outfile))
+            outfile = Path(f"{self.title} - {self.artist}.udn")
 
         try:
-            with open(dest, "w") as output:
+            with outfile.open("w") as output:
                 output.write(self._markup)
                 # stick the metadata at the bottom
                 if self._meta is not None:
@@ -509,9 +503,9 @@ class Song:
                     for line in yaml.safe_dump(
                         self._meta, default_flow_style=False
                     ).splitlines():
-                        output.write(f";{line}")
-                self.sourcefile = dest
-                print(f"saved song to {dest}")
+                        output.write(f";{line}\n")
+                self._filename = outfile
+                print(f"saved song to {outfile}")
         except OSError as E:
             # switch to logging at some point
             print(f"unable to save {E.filename} - {E.strerror}")
@@ -520,83 +514,101 @@ class Song:
 
     @property
     def markup(self):
+        """Fetch current markup content."""
         return self._markup
 
     @markup.setter
     def markup(self, content):
+        """Replace existing markup."""
         self._markup = content
 
     @property
     def filename(self):
+        """Get the song filename."""
         return self._filename
 
     @filename.setter
     def filename(self, path):
+        """Set the song filename."""
         self._filename = Path(path)
 
     @property
     def artist(self):
+        """Get the song artist."""
         return self._artist
 
     @artist.setter
     def artist(self, value):
+        """Set the song artist."""
         self._artist = value
 
     @property
     def title(self):
+        """Get the song title."""
         return self._title
 
     @title.setter
     def title(self, value):
+        """Set the song title."""
         self._title = value
 
     # no setter for chords, they're parsed from input
     @property
     def chords(self):
+        """Get the chords used in the song."""
         return self._chords
 
     # tags are read-only too (ish)
     @property
     def tags(self):
+        """Get song tags."""
         return self._tags
 
     @tags.setter
     def tags(self, taglist):
+        """Replace all song tags."""
         self._tags = set(taglist)
 
     def tag(self, tag):
+        """Set individual song tags."""
         if tag not in self.tags:
             self._tags.add(tag)
 
     def untag(self, tag):
+        """Remove a specific tag."""
         if tag in self._tags:
             self._tags.pop(tag)
 
     def clear_tags(self):
+        """Clear all tags."""
         # remoes ALL tags
         self._tags = set([])
 
     @property
     def checksum(self):
+        """Get the content checksum."""
         return self._checksum
 
     @property
     def id(self):
+        """Get song id."""
         return self._id
 
     @id.setter
     def id(self, val: int):
+        """Set the song id."""
         self._id = val
 
     @property
     def meta(self):
+        """Get song metadata."""
         return self._meta
 
     @meta.setter
     def meta(self, data, **kwargs):
-        """
-        Sets metadata by either updating the dict in place, or
-        using kwargs to change single keys
+        """Set or update metadata.
+
+        Can set individual keys or update it all
 
         kwargs overrides everything else :)
         """
@@ -605,38 +617,43 @@ class Song:
             self._meta.update(data)
             if len(kwargs):
                 self._meta.update(kwargs)
-        except TypeError:
-            raise TypeError("data must be a dict")
+        except TypeError as E:
+            raise TypeError("data must be a dict") from E
 
     @property
     def size(self):
+        """Get markup size."""
         return self._fsize
 
     @property
     def loaded(self):
+        """Return the load time."""
         return f"{self._load_time:%Y-%m-%d %H:%M:%S}"
 
     @property
     def modified(self):
+        """Return modification time."""
         return f"{self._mod_time:%Y-%m-%d %H:%M:%S}"
 
     @property
     def stat(self):
+        """Get size, load and modification times."""
         return f"size: {self.fsize}, loaded: {self.loaded}, modified {self.modified}"
 
     @property
     def songid(self):
-        """
-        The string representation in a songbook index
-        """
+        """Get string representation in a songbook index."""
         return self._index_entry
 
     @songid.setter
     def songid(self, data):
+        """Set the string representation of the song."""
         try:
             self._index_entry = str(data)
-        except TypeError:
-            raise TypeError("Song IDs must be strings, or be convertible to strings")
+        except TypeError as E:
+            raise TypeError(
+                "Song IDs must be strings, or be convertible to strings"
+            ) from E
 
     @property
     def template(self):
@@ -645,4 +662,5 @@ class Song:
 
     @template.setter
     def template(self, value):
+        """Change the template used to render the song."""
         self._template = value
