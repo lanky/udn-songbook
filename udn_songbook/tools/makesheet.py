@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Create a PDF or HTML document from a UDN songsheet."""
+
 import argparse
 import datetime
 import shutil
@@ -8,18 +10,26 @@ from typing import List
 
 from udn_songbook import Song
 
+# so we know which profiles are defined
+from udn_songbook.config import settings
+
 
 def parse_cmdline(argv: List[str]) -> argparse.Namespace:
-    """
-    Process commandline options and arguments, provide help
-    """
+    """Process commandline options and arguments, provide help."""
 
-    preamble = """
-    Generates a PDF or HTML songsheet from a UDN input file
+    preamble = f"""
+Generates a PDF or HTML songsheet from a UDN input file
 
-    Files are generated in your CWD (current working directory),
-    unless you specify a path to an output file.
+Files are generated in your CWD (current working directory),
+unless you specify a path to an output file.
 
+Profiles can be used to define common output formats
+(whether to display chords etc).
+
+Profiles are defined in TOML files and merged.
+
+Currently discovered config files:
+  - {"\n  - ".join([str(f) for f in settings.settings_file])}
     """
 
     parser = argparse.ArgumentParser(
@@ -37,9 +47,7 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
         "--force",
         action="store_true",
         default=False,
-        help="""Overwrite existing output files without warning.
-                Will backup existing files with a timestamp suffix
-                if this is not specified.""",
+        help="overwrite in-place rather than renaming existing output files",
     )
 
     parser.add_argument(
@@ -54,8 +62,7 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
         "-s",
         "--style",
         type=Path,
-        help="""name of stylesheet to use for this songsheet.
-        Will use built-in syles unless you provide a path""",
+        help="Path to custom stylsheet, or name of built-in one.",
     )
 
     outgrp = parser.add_argument_group(
@@ -63,10 +70,10 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
     )
 
     outgrp.add_argument(
-        "--singers",
-        action="store_true",
-        default=False,
-        help="Generate a singer's sheet (no chords)",
+        "-p",
+        "--profile",
+        choices=settings.get("profile").keys(),
+        help="Select a output profile (singer, etc).",
     )
 
     outgrp.add_argument(
@@ -79,8 +86,35 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
     outgrp.add_argument(
         "-t",
         "--transpose",
+        metavar="SEMITONES",
         type=int,
         help="transpose song by this many semitones before rendering. Can be negative",
+    )
+
+    stylegrp = parser.add_argument_group(
+        "Content Customisation",
+        "Settings present in a chosen profile (see --profile) take precedence",
+    )
+    stylegrp.add_argument(
+        "--chords",
+        action="store_true",
+        default=False,
+        help="Include inline chord names",
+    )
+    stylegrp.add_argument(
+        "--notes",
+        action="store_true",
+        default=False,
+        help="Include inline performance notes ('slowly' etc)",
+    )
+    stylegrp.add_argument(
+        "--diagrams", action="store_true", default=False, help="Include chord diagrams"
+    )
+    stylegrp.add_argument(
+        "--singer-notes",
+        action="store_true",
+        default=False,
+        help="Include inline singer notes (for duets etc)",
     )
 
     opts = parser.parse_args(argv)
@@ -94,15 +128,6 @@ def parse_cmdline(argv: List[str]) -> argparse.Namespace:
             Path(opts.filename).with_suffix(".html" if opts.html else ".pdf").name
         )
 
-    if opts.singers:
-        opts.chords = False
-        opts.notes = False
-        opts.singer_notes = True
-    else:
-        opts.chords = True
-        opts.notes = True
-        opts.singer_notes = False
-
     return opts
 
 
@@ -111,9 +136,20 @@ def main():
     Main functionality
     """
     opts = parse_cmdline(sys.argv[1:])
-    print(opts)
 
     song = Song(opts.filename)
+
+    # figure out stylesheets
+    if opts.style and not any(
+        [
+            opts.style.with_suffix(".css").exists(),
+            (song.styles_dir / opts.style.with_suffix(".css")).exists(),
+        ]
+    ):
+        print(f"Cannot locate stylesheet {opts.style}")
+        sys.exit(2)
+
+    # we provided a stylesheet, does it exist?
 
     if opts.transpose:
         if opts.verbose:
@@ -129,8 +165,15 @@ def main():
             ),
         )
 
-    if opts.verbose:
-        print(f"Writing output to {opts.output}")
+    context = {
+        "chords": opts.chords,
+        "notes": opts.notes,
+        "diagrams": False,  # future-proofing
+        "singer_notes": opts.singer_notes,
+        "credits": False,  # future-proofing
+    }
+
+    print(f"Rendering {opts.filename} as {opts.output}")
 
     if opts.html:
         with opts.output.open(mode="w") as dest:
@@ -138,22 +181,18 @@ def main():
         with open(opts.output, "w") as dest:
             dest.write(
                 song.html(
-                    standalone=True,
-                    chords=opts.chords,
-                    notes=opts.notes,
-                    singer_notes=opts.singer_notes,
-                    css_dir=opts.style.parent,
                     stylesheet=opts.style,
+                    profile=opts.profile,
+                    **context,
                 )
             )
 
     else:
         song.pdf(
             destfile=opts.output,
-            chords=opts.chords,
-            notes=opts.notes,
-            singer_notes=opts.singer_notes,
             styleheet=opts.style,
+            profile=opts.profile,
+            **context,
         )
 
 
