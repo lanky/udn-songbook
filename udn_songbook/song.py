@@ -39,7 +39,7 @@ CHORD = r"\(([A-G][adgijmnsu0-9#b\/A-G]*)([*\+])?\)"
 CRDPATT = re.compile(CHORD)
 
 
-class Song(object):
+class Song:
     """
     A Song object represents a song.
 
@@ -163,8 +163,8 @@ class Song(object):
             self._mod_time = datetime.datetime.fromtimestamp(fileprops.st_mtime)
             self.fsize = fileprops.st_size
 
-        except (IOError, OSError) as E:
-            print("Unable to open input file {0.filename} ({0.strerror}".format(E))
+        except OSError as E:
+            print(f"Unable to open input file {E.filename} ({E.strerror}")
             self._markup = None
 
     def __checksum(self):
@@ -194,7 +194,7 @@ class Song(object):
         """
         if markup is None:
             markup = self._markup
-        metap = re.compile(r"^{}\s?(.*)".format(leader), re.I | re.U)
+        metap = re.compile(rf"^{leader}\s?(.*)", re.I | re.U)
         metadata = []
         content = []
 
@@ -252,7 +252,7 @@ class Song(object):
         # extract our sole H1 tag, which should be the title - artist string
         hdr = soup.h1.extract()
         try:
-            title, artist = [i.strip() for i in hdr.text.split("-", 1)]
+            title, artist = (i.strip() for i in hdr.text.split("-", 1))
         except ValueError:
             title = hdr.text.strip()
             artist = None
@@ -332,7 +332,7 @@ class Song(object):
         self,
         environment: Optional[jinja2.Environment] = None,
         template: str = "song.html.j2",
-        stylesheet: str = "portrait.css",
+        stylesheet: Path = Path("portrait.css"),
         profile: Optional[str] = None,
         **context,
     ) -> str:
@@ -350,6 +350,15 @@ class Song(object):
             css_path(str): where are our stylesheets?
             stylesheet(str): which stylesheet should we use (filename)?
         """
+        if stylesheet.exists():
+            context["stylesheet"] = stylesheet.name
+            context["css_dir"] = str(stylesheet.parent)
+        elif (self.styles_dir / stylesheet).exists():
+            context["stylesheet"] = stylesheet.name
+            context["css_dir"] = self.styles_dir
+        else:
+            print(f"Cannot find stylesheet {stylesheet}")
+
         if profile is not None:
             ctx = self._settings.get(f"profile.{profile}", {})
             context.update(ctx)
@@ -366,7 +375,7 @@ class Song(object):
 
     def pdf(
         self,
-        stylesheet: str = "portrait.css",
+        stylesheet: Path = Path("portrait.css"),
         destfile: Optional[str] = None,
         profile: Optional[str] = None,
         **context,
@@ -406,17 +415,15 @@ class Song(object):
         # load it from the included stylesheets
         # fall back to the default "portrait.css"
 
-        stylesdir = self.location / "stylesheets"
-
         fontcfg = FontConfiguration()
         # figure out the stylesheet location
         styles = None
-        for sheet in [stylesheet, stylesdir / stylesheet.name]:
+        for sheet in [stylesheet, self.styles_dir / stylesheet]:
             if sheet.exists():
                 styles = CSS(filename=sheet, font_config=fontcfg)
                 break
         if styles is None:
-            styles = CSS(filename=stylesdir / stylesheet, font_config=fontcfg)
+            styles = CSS(filename=self.styles_dir / stylesheet, font_config=fontcfg)
 
         content = HTML(string=self.html(**context))
         pdfdoc = content.render(
@@ -505,7 +512,7 @@ class Song(object):
                         output.write(f";{line}")
                 self.sourcefile = dest
                 print(f"saved song to {dest}")
-        except (IOError, OSError) as E:
+        except OSError as E:
             # switch to logging at some point
             print(f"unable to save {E.filename} - {E.strerror}")
 
@@ -607,15 +614,15 @@ class Song(object):
 
     @property
     def loaded(self):
-        return "{0._load_time:%Y-%m-%d %H:%M:%S}".format(self)
+        return f"{self._load_time:%Y-%m-%d %H:%M:%S}"
 
     @property
     def modified(self):
-        return "{0._mod_time:%Y-%m-%d %H:%M:%S}".format(self)
+        return f"{self._mod_time:%Y-%m-%d %H:%M:%S}"
 
     @property
     def stat(self):
-        return "size: {0.fsize}, loaded: {0.loaded}, modified {0.modified}".format(self)
+        return f"size: {self.fsize}, loaded: {self.loaded}, modified {self.modified}"
 
     @property
     def songid(self):
