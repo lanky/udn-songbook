@@ -27,6 +27,8 @@ from pychord import Chord  # type: ignore
 from weasyprint import CSS, HTML  # type: ignore
 from weasyprint.text.fonts import FontConfiguration  # type: ignore
 
+from .config import settings
+
 # jinja filters and general utils
 from .filters import custom_filters
 from .utils import safe_filename, unpunctuate
@@ -90,6 +92,7 @@ class Song(object):
         self._sort_name: str = ""
         self.location: Path = Path(__file__).parent
         self.styles_dir: Path = self.location / "stylesheets"
+        self._settings = settings
         if hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
@@ -330,6 +333,7 @@ class Song(object):
         environment: Optional[jinja2.Environment] = None,
         template: str = "song.html.j2",
         stylesheet: str = "portrait.css",
+        profile: Optional[str] = None,
         **context,
     ) -> str:
         """
@@ -346,6 +350,9 @@ class Song(object):
             css_path(str): where are our stylesheets?
             stylesheet(str): which stylesheet should we use (filename)?
         """
+        if profile is not None:
+            ctx = self._settings.get(f"profile.{profile}", {})
+            context.update(ctx)
         # use the passed template, if not fall back to the default
         if template is None:
             template = self.template
@@ -361,6 +368,7 @@ class Song(object):
         self,
         stylesheet: str = "portrait.css",
         destfile: Optional[str] = None,
+        profile: Optional[str] = None,
         **context,
     ):
         """
@@ -389,6 +397,10 @@ class Song(object):
         NB at this time, chord diagrams are not generated - this will use the
         external python-fretboard diagram library
         """
+        # load any specified profile and update the context
+        if profile is not None:
+            ctx = self._settings.get(f"profile.{profile}", {})
+            context.update(ctx)
         # try the stylesheet provided, as follows:
         # load it as an absolute path
         # load it from the included stylesheets

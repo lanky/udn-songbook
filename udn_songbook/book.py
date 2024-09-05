@@ -10,14 +10,16 @@ import os
 from collections import OrderedDict
 from operator import itemgetter
 from pathlib import Path
-from typing import List, Union
+from typing import Optional, Union
 
 from udn_songbook import song
+
+from .config import settings
 
 # from glob import glob
 
 
-class SongBook(object):
+class SongBook:
     """Wrapper class representing a songbook.
 
     A songbook is essentially an indexed list of Song objects, generated from
@@ -30,13 +32,14 @@ class SongBook(object):
 
     def __init__(
         self,
-        inputs: List[str] = [],
+        inputs: list[str] = [],
         logger: Union[logging.Logger, None] = None,
-        template_paths: List[str] = [],
+        template_paths: list[str] = [],
         song_template: str = "song.html.j2",
         index_template: str = "index.html.j2",
         title: str = "My Songbook",
-        style: Path | List[Path] = [],
+        profile: Optional[str] = None,
+        style: Path | list[Path] = [],
     ):
         """Create a songbook object from a list of inputs.
 
@@ -83,6 +86,7 @@ class SongBook(object):
         self._title = title
         self._style = style
         self._styles_dir = Path(__file__).parent / "stylesheets"
+        self.settings = settings
 
         # logger instance, if there is one.
         self._logger = logger
@@ -166,7 +170,7 @@ class SongBook(object):
         for i, k in enumerate(self._index):
             self._index[k].id = i
 
-    def update(self, inputs: List[str]):
+    def update(self, inputs: list[str]):
         """Replace entries in an existing songbook using the provided inputs.
 
         This will regenerate the index
@@ -240,7 +244,7 @@ class SongBook(object):
         return self._style
 
     @style.setter
-    def style(self, data: Path | List[Path]):
+    def style(self, data: Path | list[Path]):
         if isinstance(data, Path):
             self._style = [data]
         else:
