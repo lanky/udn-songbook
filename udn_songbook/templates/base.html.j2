@@ -7,7 +7,8 @@
   {% block head %}
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <!-- {{ songbook.stylesheet|default('none') }} -->
-  <link rel="stylesheet" type="text/css" href="{{ css_dir | default('../css') }}/{{ stylesheet|default('portrait.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ css_path | default('../css') }}/{{ book_css }}.css" />
+  <link rel="stylesheet" type="text/css" href="{{ css_path | default('../css') }}/{{ song.filename.with_suffix('.css').name }}"/>
   {% block localstyles %}
   <style type="text/css">
   {% if not chords %}
@@ -20,11 +21,8 @@
     .chords { display: none; }
     .overflow { display: none; }
   {% endif %}
-  {% if not singer_notes -%}
-    .singer { display: none; }
-  {% endif -%}
-  {% if song.meta.font_size -%}
-  .content {
+  {% if song.meta.font_size %}
+    .content {
       font-size: {{ song.meta.font_size }};
   }
   {% endif %}
@@ -34,7 +32,7 @@
   <title>{% block title %}{{ songbook.title|default('Songbook') }}{% endblock %}</title>
   {% endblock %}
 </head>
-<body>
+  <div class="branding">{% block branding %}{% endblock %}</div>
   <div class="header">{% block songheader %}{% endblock %}</div>
   <div class="content">{% block content %}{% endblock %}</div>
   {% if diagrams %}
@@ -44,5 +42,4 @@
   <div class="chords">{% block chords %}{% endblock %}</div>
   {% endif %}
   <div class="footer">{% block footer %}{% endblock %}</div>
-</body>
 </html>

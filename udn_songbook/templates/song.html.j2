@@ -8,6 +8,9 @@
 {% endblock %}
 
 {% block content %}
+{% if song.meta.capo %}
+<span class="capo">to play along with the original, capo at {{ song.meta.capo }}</span>
+{% endif %}
 {{ song.body }}
 {% endblock %}
 {% if diagrams %}
@@ -25,7 +28,7 @@
     {% endfor %}
   {% endblock %}
 {% else %}
-<!-- show_diagrams = {{ diagrams }} -->
+<!-- show_diagrams = {{ show_diagrams }} -->
 {% endif %}
 {% block footer %}
 {% if songbook %}
