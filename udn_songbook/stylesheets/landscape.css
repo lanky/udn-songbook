@@ -2,8 +2,8 @@
 @import 'ukedown_elements.css';
 
 @page {
-    size: A4 landscape;
     margin: 0.5cm;
+    size: A4 landscape;
 
     @bottom-right-corner {
         content: counter(page) "/" counter(pages);
@@ -32,7 +32,7 @@
 
 html {
     font-family: verdana, "dejavu sans", sans-serif;
-    font-size: 14px;
+    font-size: 14pt;
 }
 
 h1::before {
@@ -43,75 +43,90 @@ h1 {
     font-size: 1.2em;
     /* padding-bottom: 0.2em; */
     padding-left: 5px;
+    text-align: center;
 }
 
 
 .header {
+    left: 0;
     page-break-before: always;
     width: 100%;
-    left: 0;
 }
 
+.branding {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.branding img {
+    height: 3cm;
+    float: right;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
 
 /* content div, max 2 cols in portrait mode */
 /* portrait in 72dpi is 595x842 pixels */
 .content {
-   column-width: 50%;
-   column-count: 2;
-   column-rule-style: solid;
-   column-rule-width: 1px;
-   column-fill: auto;
-   height: 90vh;
-   padding: 5px;
-   width: 100%;
-   max-width: 100%;
-   orphans: 0;
+    column-count: 2;
+    column-fill: auto;
+    column-rule-style: solid;
+    column-rule-width: 1px;
+    column-width: auto;
+    height: 90vh;
+    max-width: 100%;
+    orphans: 4;
+    padding: 5px;
+    width: 100%;
 }
 
-.content > p {
-    padding: 0px;
+.content>p {
     margin-top: 0px;
-    orphans: 0 ;
+    orphans: 0;
+    padding: 0px;
 }
 
 /* footer  can have SVG background images */
 .footer {
-    position: fixed;
-    left: 0;
     bottom: 0;
-    width: 100%;
     height: 5vh;
+    left: 0;
     page-break-after: always;
+    position: fixed;
     text-align: center;
+    width: 100%;
+    margin-top: 2px;
 }
 
 /* div on the right of the page for chord diagrams, if we want any*/
 .chords {
+    align-items: flex-start;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     flex-wrap: wrap;
-    max-height: 590px;
     float: right;
-    width: 50px;
+    max-height: 590px;
     max-width: 100px;
+    width: 50px;
 }
 
 /* overflow is a second div for extra chords (10+), appears to the left of the normal chord div */
 .overflow {
+    align-items: flex-start;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+    float: right;
     max-height: 590px;
     width: 50px;
-    align-items: flex-start;
-    float: right;
 }
 
 a.middle {
-    font-size: 1em;
+    font-size: 0.8em;
     text-align: center;
     text-decoration: none;
+    color: gray;
 }
 
 .section_header {
@@ -120,40 +135,40 @@ a.middle {
 
 /* fixed position at bottom of page for branding images, links etc*/
 .footer img {
-    max-height: 25px;
-    width: auto;
     display: block;
     margin-left: auto;
     margin-right: auto;
     margin-top: 5px;
-
+    max-height: 25px;
+    width: auto;
 }
 
 .labels {
-  font-size: 0.5em;
-  font-family: Verdana, Helvetica, Sans-Serif;
+    font-family: Verdana, Helvetica, Sans-Serif;
+    font-size: 0.5em;
 }
 
 /* index page is multi-column*/
 .index {
-    column-width: auto;
     column-count: 2;
-    column-rule-width: 1px;
-    column-rule-style: solid;
+    column-count: 2;
     column-rule-color: black;
+    column-rule-style: solid;
+    column-rule-width: 1px;
+    column-width: auto;
+    counter-reset: page;
+    margin: auto;
+    max-height: 490px;
     overflow: auto;
     width: auto;
-    margin: auto;
-    column-count: 2;
-    max-height: 490px;
-    counter-reset: page
+    font-size: 11pt;
 }
 
 .credits {
+    display: block;
     font-size: 0.6em;
     font-style: italic;
     text-align: left;
-    display: block;
 }
 
 .container {
@@ -166,15 +181,15 @@ a.middle {
 }
 
 .chordname {
-  font-family: Verdana, "DejaVu Sans", Helvetica, Sans-Serif;
-  text-align: center;
-  font-weight: bold;
-  font-size: 8px;
-  padding: 0;
-  margin: 0;
+    font-family: Verdana, "DejaVu Sans", Helvetica, Sans-Serif;
+    font-size: 8px;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
 svg.labels {
-  font-size: 0.5em;
-  font-family: Verdana, Helvetica, Sans-Serif;
+    font-family: Verdana, Helvetica, Sans-Serif;
+    font-size: 0.5em;
 }

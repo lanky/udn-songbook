@@ -49,14 +49,14 @@ p {
 
 /* content div, max 2 cols in portrait mode */
 .content {
-   column-width: auto;
-   column-rule-style: solid;
-   column-fill: auto;
-   max-height: 730px;
-   float: left;
-   padding-left: 5px;
-   padding-right: 5px;
-   width: 100%;
+    column-width: auto;
+    column-rule-style: solid;
+    column-fill: auto;
+    max-height: 730px;
+    float: left;
+    padding-left: 5px;
+    padding-right: 5px;
+    width: 100%;
 }
 
 .chords {
@@ -83,6 +83,7 @@ p {
     position: fixed;
     right: 50px;
 }
+
 /* footer  can have SVG background images */
 .footer {
     position: fixed;
@@ -111,8 +112,8 @@ p {
 }
 
 .labels {
-  font-size: 0.5em;
-  font-family: Verdana, Helvetica, Sans-Serif;
+    font-size: 0.5em;
+    font-family: Verdana, Helvetica, Sans-Serif;
 }
 
 /* index page is multi-column*/
@@ -139,33 +140,29 @@ p {
 }
 
 .chordname {
-  font-family: Verdana, "DejaVu Sans", Helvetica, Sans-Serif;
-  text-align: center;
-  font-weight: bold;
-  font-size: 8px;
-  padding: 0;
-  margin: 0;
+    font-family: Verdana, "DejaVu Sans", Helvetica, Sans-Serif;
+    text-align: center;
+    font-weight: bold;
+    font-size: 8px;
+    padding: 0;
+    margin: 0;
 }
 
 svg.labels {
-  font-size: 0.5em;
-  font-family: Verdana, Helvetica, Sans-Serif;
+    font-size: 0.5em;
+    font-family: Verdana, Helvetica, Sans-Serif;
 }
 
-@media only screen
-and (min-device-width: 768px)
-and (max-device-width: 1024px)
-and (orientation: landscape) {
-    html {
-        width: 842px;
-        height: 595px;
-    }
-    .content {
-        column-count: 2;
-        /* A4 is 842 x 595 in landscape */
-        width: 100%;
-        min-height: 490px;
-        max-height: 540px;
-    }
+/* logo, watermark etc */
+.branding {
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
+.branding img {
+    height: 3cm;
+    float: right;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
