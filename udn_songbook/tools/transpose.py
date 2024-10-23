@@ -8,9 +8,16 @@ from pathlib import Path
 
 from udn_songbook import Song
 
+"""
+A tool using the `udn_songbook` mechanisms to transpose songs
+by a given number of semitones
+"""
+
 
 def parse_cmdline(argv: list[str] = []) -> argparse.Namespace:
-    """Process commandline options and arguments."""
+    """
+    process commandline options and arguments
+    """
     desc = """A tool using the `udn_songbook` toolset to transpose ukedown
     songsheets by a given number of semitones.
     Can overwrite existing files if you want it to.
