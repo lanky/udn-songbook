@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "udn-songbook"
-version = "1.4.0"
+version = "1.4.1"
 description = "songbook and songsheet management for songsheets in ukedown format"
 authors = ["Stuart Sears <stuart@sjsears.com>"]
 include = ["CHANGELOG.md", "LICENSE.txt"]
@@ -27,8 +27,8 @@ more-itertools = "^10.2.0"
 bs4 = "^0.0.2"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.6.4"
-pre-commit = "^3.6.2"
+ruff = "^0.7.4"
+pre-commit = "^4.0.1"
 pytest = "^8.0.1"
 mypy = "^1.11.2"
 types-markdown = "^3.7.0.20240822"
