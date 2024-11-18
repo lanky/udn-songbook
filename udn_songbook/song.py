@@ -7,6 +7,7 @@ import datetime
 import hashlib
 import io
 import re
+import sys
 
 # path manipulation
 from pathlib import Path
@@ -333,8 +334,9 @@ class Song:
         self,
         environment: Optional[jinja2.Environment] = None,
         template: str = "song.html.j2",
-        stylesheet: Path = Path("portrait.css"),
+        stylesheet: Optional[Path] = Path("portrait.css"),
         profile: Optional[str] = None,
+        verbose: bool = False,
         **context,
     ) -> str:
         """Render HTML output using jinja templates.
@@ -351,6 +353,17 @@ class Song:
             css_path(str): where are our stylesheets?
             stylesheet(str): which stylesheet should we use (filename)?
         """
+        if profile is not None:
+            ctx = self._settings.get(f"profile.{profile}", {})
+            context.update(ctx)
+
+        if stylesheet is None:
+            stylesheet = Path(context.get("stylesheet", "portrait.css")).with_suffix(
+                ".css"
+            )
+        else:
+            stylesheet = Path(stylesheet).with_suffix(".css")
+
         if stylesheet.exists():
             context["stylesheet"] = stylesheet.name
             context["css_dir"] = str(stylesheet.parent)
@@ -358,11 +371,14 @@ class Song:
             context["stylesheet"] = stylesheet.name
             context["css_dir"] = self.styles_dir
         else:
+            print(self.styles_dir)
             print(f"Cannot find stylesheet {stylesheet}")
+            sys.exit(2)
 
-        if profile is not None:
-            ctx = self._settings.get(f"profile.{profile}", {})
-            context.update(ctx)
+        if verbose:
+            print("Rendering Context:")
+            print(context)
+
         # use the passed template, if not fall back to the default
         if template is None:
             template = self.template
@@ -376,7 +392,7 @@ class Song:
 
     def pdf(
         self,
-        stylesheet: Path = Path("portrait.css"),
+        stylesheet: Optional[Path] = Path("portrait.css"),
         destfile: Optional[str] = None,
         profile: Optional[str] = None,
         **context,
@@ -409,6 +425,11 @@ class Song:
         if profile is not None:
             ctx = self._settings.get(f"profile.{profile}", {})
             context.update(ctx)
+
+        if stylesheet is None:
+            stylesheet = Path(context.get("stylesheet", "portrait.css"))
+        else:
+            stylesheet = Path(stylesheet)
         # try the stylesheet provided, as follows:
         # load it as an absolute path
         # load it from the included stylesheets
@@ -416,13 +437,13 @@ class Song:
 
         fontcfg = FontConfiguration()
         # figure out the stylesheet location
-        styles = None
-        for sheet in [stylesheet, self.styles_dir / stylesheet]:
-            if sheet.exists():
-                styles = CSS(filename=sheet, font_config=fontcfg)
-                break
-        if styles is None:
+        if stylesheet.exists():
+            styles = CSS(filename=stylesheet, font_config=fontcfg)
+        elif (self.styles_dir / stylesheet).exists():
             styles = CSS(filename=self.styles_dir / stylesheet, font_config=fontcfg)
+        else:
+            print(f"Cannot find stylesheet {stylesheet}")
+            sys.exit(2)
 
         content = HTML(string=self.html(**context))
         pdfdoc = content.render(
