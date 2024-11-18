@@ -62,7 +62,7 @@ Currently discovered config files:
         "-s",
         "--style",
         type=Path,
-        help="Path to custom stylsheet, or name of built-in one.",
+        help="Path to custom stylesheet, or name of built-in one.",
     )
 
     outgrp = parser.add_argument_group(
@@ -73,6 +73,7 @@ Currently discovered config files:
         "-p",
         "--profile",
         choices=settings.get("profile").keys(),
+        default="default",
         help="Select a output profile (singer, etc).",
     )
 
@@ -139,13 +140,16 @@ def main():
 
     song = Song(opts.filename)
 
+    profile = settings.get(f"profiles.{opts.profile}", {})
+
+    if not opts.style:
+        opts.style = Path(profile.get("stylesheet", "portrait.css"))
+
     # figure out stylesheets
-    if opts.style and not any(
-        [
-            opts.style.with_suffix(".css").exists(),
-            (song.styles_dir / opts.style.with_suffix(".css")).exists(),
-        ]
-    ):
+    if opts.style and not any([
+        opts.style.with_suffix(".css").exists(),
+        (song.styles_dir / opts.style.with_suffix(".css")).exists(),
+    ]):
         print(f"Cannot locate stylesheet {opts.style}")
         sys.exit(2)
 
@@ -173,7 +177,8 @@ def main():
         "credits": False,  # future-proofing
     }
 
-    print(f"Rendering {opts.filename} as {opts.output}")
+    if opts.verbose:
+        print(f"Rendering {opts.filename} as {opts.output}")
 
     if opts.html:
         with opts.output.open(mode="w") as dest:
@@ -183,6 +188,7 @@ def main():
                 song.html(
                     stylesheet=opts.style,
                     profile=opts.profile,
+                    verbose=opts.verbose,
                     **context,
                 )
             )
@@ -190,8 +196,9 @@ def main():
     else:
         song.pdf(
             destfile=opts.output,
-            styleheet=opts.style,
+            stylesheet=opts.style,
             profile=opts.profile,
+            verbose=opts.verbose,
             **context,
         )
 
