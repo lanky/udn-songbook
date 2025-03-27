@@ -5,10 +5,9 @@ import logging
 import os
 import re
 from string import punctuation
-from typing import Union
 
 
-def make_dir(destdir: str, logger: Union[logging.Logger, None]):
+def make_dir(destdir: str, logger: logging.Logger | None):
     """Attempt to create a directory if it doesn't already exist.
 
     Raise an error if the creation fails
