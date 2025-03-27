@@ -1,7 +1,7 @@
 # vim: set ts=4 sts=4 sw=4 et ci nu ft=python:
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
