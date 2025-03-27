@@ -14,6 +14,9 @@
   {% if not chords %}
     .chord { display: none; }
   {% endif %}
+  {% if not capo -%}
+    .capo { display: none; }
+  {% endif %}
   {% if not notes %}
     .notes { display: none; }
   {% endif %}
