@@ -6,17 +6,18 @@ import logging
 import os
 
 # for function annotations
-from typing import Dict, List
+from typing import TYPE_CHECKING
 
-import jinja2
-from dynaconf import settings
+if TYPE_CHECKING:
+    import jinja2
+    from dynaconf import settings  # type: ignore[import-untyped]
 
 import udn_songbook
 
 from .filters import custom_filters
 
 
-class HTMLPublisher(object):
+class HTMLPublisher:
     """
     Generic class, will call out to jinja2 or any other rendering
     engine we choose to use
@@ -29,8 +30,8 @@ class HTMLPublisher(object):
         self,
         songbook: udn_songbook.book.SongBook,
         destdir: str,
-        templatedirs: List[str] = settings.TEMPLATEDIRS,
-        stylesheets: List[str] = settings.STYLESHEETS,
+        templatedirs: list[str] = settings.TEMPLATEDIRS,
+        stylesheets: list[str] = settings.STYLESHEETS,
     ):
         """
         creates  a jinja2 environment, loading templates from the specified
@@ -51,24 +52,22 @@ class HTMLPublisher(object):
         self.stylesheets = stylesheets
 
         self.env = jinja2.Environment(
-            loader=jinja2.ChoiceLoader(
-                [
-                    jinja2.FileSystemLoader(templatedirs),
-                    jinja2.PackageLoader("udn_songbook", "templates"),
-                ]
-            )
+            loader=jinja2.ChoiceLoader([
+                jinja2.FileSystemLoader(templatedirs),
+                jinja2.PackageLoader("udn_songbook", "templates"),
+            ])
         )
         # update the filter list
         self.env.filters.update(custom_filters)
 
-    def build_structure(self, layout: List[str] = settings.LAYOUT):
+    def build_structure(self, layout: list[str] = settings.LAYOUT):
         """
         Creates a directory structure into which we write our files
         """
         if not os.path.exists(self.topdir):
             try:
                 os.makedirs(self.topdir)
-            except (IOError, OSError) as E:
+            except OSError as E:
                 self.book.__log(
                     f"Unable to create output dir {E.filename} - {E.strerror}",
                     logging.ERROR,
@@ -78,7 +77,7 @@ class HTMLPublisher(object):
         for dname in sorted(layout):
             try:
                 os.makedirs(os.path.join(self.topdir, dname))
-            except (IOError, OSError) as E:
+            except OSError as E:
                 self.book.__log(
                     f"Unable to create output dir {E.filename} - {E.strerror}",
                     logging.ERROR,
@@ -91,7 +90,7 @@ class HTMLPublisher(object):
         to render and link the index and
         """
 
-    def render_index(self, context: Dict, template: str = "index.html.j2", **kwargs):
+    def render_index(self, context: dict, template: str = "index.html.j2", **kwargs):
         """
         Render the chose templated  with the provided context
         The template will be searched for in the given paths, in order, stopping at
@@ -101,13 +100,14 @@ class HTMLPublisher(object):
         tpl = self.env.get_template(template)
         return tpl.render(context, **kwargs)
 
-    def render_song(self, context: Dict, template: str = "song.html.j2", **kwargs):
+    def render_song(self, context: dict, template: str = "song.html.j2", **kwargs):
         pass
 
 
 class PDFPublisher(HTMLPublisher):
     """
-    The PDF Renderer processes one or more songsheets and returns them as rendered PDF docs
+    The PDF Renderer processes one or more songsheets
+    and returns them as rendered PDF docs.
     """
 
     pass
