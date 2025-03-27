@@ -10,11 +10,14 @@ import os
 from collections import OrderedDict
 from operator import itemgetter
 from pathlib import Path
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
-from udn_songbook import song
+from udn_songbook.song import Song
 
 from .config import settings
+
+if TYPE_CHECKING:
+    from pychord import Chord  # type: ignore[import-untyped]
 
 # from glob import glob
 
@@ -32,13 +35,13 @@ class SongBook:
 
     def __init__(
         self,
-        inputs: list[str] = [],
-        logger: Union[logging.Logger, None] = None,
+        inputs: list[Path] = [],
+        logger: logging.Logger | None = None,
         template_paths: list[str] = [],
         song_template: str = "song.html.j2",
         index_template: str = "index.html.j2",
         title: str = "My Songbook",
-        profile: Optional[str] = None,
+        profile: str | None = None,
         style: Path | list[Path] = [],
     ):
         """Create a songbook object from a list of inputs.
@@ -71,15 +74,15 @@ class SongBook:
         #    config(str):        filename for CSS and other configuration
         """
         if not isinstance(inputs, list):
-            self._inputs = [inputs]
+            self._inputs: list[Path] = [inputs]
         else:
             self._inputs = inputs
         # keep track of all the chord diagrams we need for the book
         # these are no longer strings, so `chords` can no longer be a set.
-        self.chords = []
-        self.contents = []
+        self.chords: list[Chord] = []
+        self.contents: list[Song] = []
         # index will actually be { 'title - artist' : song object }
-        self._index = OrderedDict()
+        self._index: OrderedDict[str, Song] = OrderedDict()
         self.song_template = song_template
         self.index_template = index_template
         self.template_paths = template_paths
@@ -120,7 +123,7 @@ class SongBook:
             songdata(str): path to a file (usually)
         """
         try:
-            s = song.Song(path, template=self.song_template)
+            s = Song(path, template=self.song_template)
             # add the song object to our content list
             self.contents.append(s)
             # add the chords it uses to our chords list
@@ -160,9 +163,9 @@ class SongBook:
         title and artist must be a unique combination.
         Although we could permit dupes I guess, depending on the book.
         """
-        self._index = OrderedDict(
-            {k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))}
-        )
+        self._index = OrderedDict({
+            k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))
+        })
 
     def renumber(self):
         """Renumber pages in a collated book."""

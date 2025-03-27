@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 # for type hinting
-from typing import IO, Any, Dict, Optional, Union
+from typing import IO, Any
 
 import jinja2
 import markdown
@@ -51,7 +51,7 @@ class Song:
     scripts
     """
 
-    def __init__(self, src: Union[IO, str, Path], **kwargs):
+    def __init__(self, src: IO | str | Path, **kwargs):
         """
         Construct our song object from a ukedown (markdown++) file.
 
@@ -116,7 +116,7 @@ class Song:
             self._markup = src  # type: ignore
             self._fsize = len(src)  # type: ignore
         # arbitrary metadata, some of which will have meaning
-        self._meta: Dict[str, Any] = {}
+        self._meta: dict[str, Any] = {}
         # tags are separate
         self._tags: set[str] = set([])
 
@@ -182,7 +182,7 @@ class Song:
         shasum.update(self._markup.encode("utf-8"))
         self._checksum = shasum.hexdigest()
 
-    def __extract_meta(self, markup: Optional[str] = None, leader: str = ";"):
+    def __extract_meta(self, markup: str | None = None, leader: str = ";"):
         """Parse out metadata from file.
 
         This MUST be done before passing to markdown
@@ -332,10 +332,10 @@ class Song:
 
     def html(
         self,
-        environment: Optional[jinja2.Environment] = None,
+        environment: jinja2.Environment | None = None,
         template: str = "song.html.j2",
-        stylesheet: Optional[Path] = Path("portrait.css"),
-        profile: Optional[str] = None,
+        stylesheet: Path = Path("portrait.css"),
+        profile: str | None = None,
         verbose: bool = False,
         **context,
     ) -> str:
@@ -392,9 +392,9 @@ class Song:
 
     def pdf(
         self,
-        stylesheet: Optional[Path] = Path("portrait.css"),
-        destfile: Optional[str] = None,
-        profile: Optional[str] = None,
+        stylesheet: Path = Path("portrait.css"),
+        destfile: str | None = None,
+        profile: str | None = None,
         **context,
     ):
         """Generate a PDF songsheet from this song.
@@ -496,7 +496,7 @@ class Song:
         # keep a record of our transposition
         self._meta["transposed"] = semitones
 
-    def save(self, path: Optional[Path] = None):
+    def save(self, path: Path | None = None):
         """Save an edited song back to disk.
 
         If path is None, will use the
