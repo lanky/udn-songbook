@@ -4,36 +4,32 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {% for style in styles -%}
-    <link rel="stylesheet" type="text/css" href="css/{{ style }}.css" />
+    {% for style in book.style -%}
+    <link rel="stylesheet" type="text/css" href="{{ (book.styles_dir / style).with_suffix('.css').name }}" />
     {% endfor %}
-    <title>{{ title }}</title>
+    <title>{{ book.title }}</title>
     <!-- # also import javascript stuff here if needed -->
 </head>
 <div class="header" id="index_{{ '%02d' | format(index_page) }}">
-    <h1>{{ title }} Index</h1>
+    <h1>{{ book.title }} Index</h1>
 </div>
 <div class="index">
-    {% for title, song in entries %}
+    {% for title, song in book.index.items() %}
     {% if outfmt == "html" %}
     {% set target='songs/%s'| format(song.filename.with_suffix('.html').name) %}
     {% else %}
     {% set target='#title_%03d'| format(song.id) %}
     {% endif %}
     <a class="indexlink" id="song_{{ song.id}}" href="{{ target }}" alt="{{ song.title }} - {{ song.artist }}">
-        {{ song.title }} - {{ song.artist }}
+        {{ song.title }} ({{ song.artist }})
     </a>
     <br />
     {% endfor %}
 </div>
 <!-- outer div -->
 <div class="footer">
-    {% if index_count > index_page %}
-    <a class="right" href="index{{ '%02d' | format(index_page + 1) }}.html">Next</a>
     {% if index_page > 0 %}
     <a class="middle" href="index.html">Home</a>
-    <a class="left" href="index{{ '%02d' | format(index_page - 1) }}.html">Prev</a>
-    {% endif %}
     {% endif %}
 </div>
 
