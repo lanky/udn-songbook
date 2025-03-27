@@ -6,7 +6,6 @@ import datetime
 import shutil
 import sys
 from pathlib import Path
-from typing import List
 
 from udn_songbook import Song
 
@@ -14,7 +13,7 @@ from udn_songbook import Song
 from udn_songbook.config import settings
 
 
-def parse_cmdline(argv: List[str]) -> argparse.Namespace:
+def parse_cmdline(argv: list[str]) -> argparse.Namespace:
     """Process commandline options and arguments, provide help."""
 
     preamble = f"""
