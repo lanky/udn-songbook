@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from udn_songbook.song import Song
 
-from .config import settings
+from .config import load_settings
 
 if TYPE_CHECKING:
     from pychord import Chord  # type: ignore[import-untyped]
@@ -43,6 +43,7 @@ class SongBook:
         title: str = "My Songbook",
         profile: str | None = None,
         style: Path | list[Path] = [],
+        project_settings: Path | list[Path] = [],
     ):
         """Create a songbook object from a list of inputs.
 
@@ -69,6 +70,7 @@ class SongBook:
 
             title (str):          a title for the songbook, for use in templates
             style (Path | list[Path]):     CSS stylesheet
+            project_settings (list[Path]): custom settings files for profiles etc.
 
         # to be added /managed, probably via dynaconf
         #    config(str):        filename for CSS and other configuration
@@ -89,7 +91,20 @@ class SongBook:
         self._title = title
         self._style = style
         self._styles_dir = Path(__file__).parent / "stylesheets"
-        self.settings = settings
+
+        # load any settings files you can find in input directories.
+        if isinstance(project_settings, Path):
+            project_settings = [project_settings]
+
+        if len(project_settings):
+            self.settings = load_settings(project_settings)
+        else:
+            # let's see if we have settings.toml files in our input dirs.
+            for i in inputs:
+                if i.is_dir() and (i / "settings.toml").exists():
+                    project_settings.append(i / "settings.toml")
+
+        self.settings = load_settings(project_settings)
 
         # logger instance, if there is one.
         self._logger = logger

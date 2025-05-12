@@ -27,7 +27,7 @@ from pychord import Chord  # type: ignore
 from weasyprint import CSS, HTML  # type: ignore
 from weasyprint.text.fonts import FontConfiguration  # type: ignore
 
-from .config import settings
+from .config import load_settings
 
 # jinja filters and general utils
 from .filters import custom_filters
@@ -93,7 +93,7 @@ class Song:
         self._sort_name: str = ""
         self.location: Path = Path(__file__).parent
         self.styles_dir: Path = self.location / "stylesheets"
-        self._settings = settings
+        self._settings = load_settings()
         if hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
