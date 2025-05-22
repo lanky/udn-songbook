@@ -33,6 +33,7 @@ classifiers = [
 [project.scripts]
 udn_transpose = "udn_songbook.tools.transpose:main"
 udn_songsheet = "udn_songbook.tools.makesheet:main"
+udn_build = "udn_songbook.tools.render:main"
 
 [project.urls]
 Repository = "https://github.com/lanky/udn-songbook"
