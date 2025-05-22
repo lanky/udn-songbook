@@ -31,7 +31,7 @@ from .config import load_settings
 
 # jinja filters and general utils
 from .filters import custom_filters
-from .utils import unpunctuate
+from .utils import renderer, unpunctuate
 
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
@@ -385,7 +385,7 @@ class Song:
         # There are prettier ways to do this but this is simple and readable
         # if we provide a jinja environment (e.g. from a parent songbook), use it
         if environment is None:
-            environment = self.__get_render_env()
+            environment = renderer()
 
         tpl = environment.get_template(template)
         return tpl.render(songbook={}, song=self, output="html", **context)
