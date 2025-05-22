@@ -3,14 +3,15 @@
 """Class representing a songbook."""
 
 import fnmatch
+import sys
 
 # from jinja2 import Environment, FileSystemLoader
-import logging
-import os
 from collections import OrderedDict
 from operator import itemgetter
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from loguru import logger  # type: ignore[import-untyped]
 
 from udn_songbook.song import Song
 
@@ -36,14 +37,13 @@ class SongBook:
     def __init__(
         self,
         inputs: list[Path] = [],
-        logger: logging.Logger | None = None,
         template_paths: list[str] = [],
         song_template: str = "song.html.j2",
         index_template: str = "index.html.j2",
         title: str = "My Songbook",
         profile: str | None = None,
         style: Path | list[Path] = [],
-        project_settings: Path | list[Path] = [],
+        project_settings: Path | None = None,
     ):
         """Create a songbook object from a list of inputs.
 
@@ -63,7 +63,6 @@ class SongBook:
 
         Args:
             inputs( list[str]):   list of files or directories containing UDN files
-            logger (logging.Logger | None): where to log messages to.
             template_paths (str): Paths to jinja2 template directories.
             song_template (str):  filename of jinja2 template for rendering Song objects
             index_template (str): filename of jinja2 template for rendering the index.
@@ -75,10 +74,11 @@ class SongBook:
         # to be added /managed, probably via dynaconf
         #    config(str):        filename for CSS and other configuration
         """
-        if not isinstance(inputs, list):
-            self._inputs: list[Path] = [inputs]
+        if isinstance(inputs, list):
+            self._inputs = [Path(i) for i in inputs]
         else:
-            self._inputs = inputs
+            self._inputs: list[Path] = [Path(inputs)]
+
         # keep track of all the chord diagrams we need for the book
         # these are no longer strings, so `chords` can no longer be a set.
         self.chords: list[Chord] = []
@@ -91,47 +91,18 @@ class SongBook:
         self._title = title
         self._style = style
         self._styles_dir = Path(__file__).parent / "stylesheets"
-
-        # load any settings files you can find in input directories.
-        if isinstance(project_settings, Path):
-            project_settings = [project_settings]
-
-        if len(project_settings):
-            self.settings = load_settings(project_settings)
-        else:
-            # let's see if we have settings.toml files in our input dirs.
-            for i in inputs:
-                if i.is_dir() and (i / "settings.toml").exists():
-                    project_settings.append(i / "settings.toml")
-
+        # include a project-specific settings file if there is one.
         self.settings = load_settings(project_settings)
 
-        # logger instance, if there is one.
-        self._logger = logger
+        logger.add(sys.stdout, level="INFO")
+        logger.add(Path.cwd() / "songbook.log", level="DEBUG")
+
         if len(self._inputs):
             self.populate()
             self.renumber()
 
-    def __log(self, message: str, prio: int = logging.DEBUG, **kwargs):
-        """Emit a log message, or don't, if self.logger is None.
-
-        presumes that self.logger is a logging.Logger instance
-        with configured handlers, formats etc. No attempt is made to do
-        this part for you
-
-        Args:
-            message(str): the message to emit
-        KWargs:
-            prio(int): the priority of the message. Default is 10 (logging.DEBUG)
-
-        You may also provide other kwargs supported by the logger.log method
-        """
-        if self._logger is not None:
-            self._logger.log(prio, message, **kwargs)
-        else:
-            return
-
-    def add_song(self, path: str):
+    @logger.catch
+    def add_song(self, path: Path):
         """Add a song to the contents list and index.
 
         Args:
@@ -145,32 +116,27 @@ class SongBook:
             self.chords.extend([c for c in s.chords if c not in self.chords])
             # insert into index
             self._index[s.songid] = s
-            self.__log(f"Added {path} with id {s.songid}")
+            logger.debug(f"Added {path} with id {s.songid}")
         except Exception:
             print("failed to add song", path)
-            self.__log(f"failed to add {path}", logging.ERROR, exc_info=True)
+            logger.error(f"failed to add {path}", exc_info=True)
             raise
 
     def populate(self):
         """Read in the content of any input directories, as Song objects."""
         for src in self._inputs:
-            if os.path.exists(src):
-                rp = os.path.realpath(src)
-                if os.path.isfile(rp) and fnmatch.fnmatch(
-                    os.path.basename(rp), "*.udn"
-                ):
-                    self.__log(f"adding songfile {rp}")
+            if src.exists():
+                rp = src.resolve()
+                if rp.is_file() and fnmatch.fnmatch(rp.name, "*.udn"):
+                    logger.debug(f"adding songfile {rp}")
                     self.add_song(rp)
                     continue
-                if os.path.isdir(rp):
-                    self.__log(f"Scanning dir {rp} for ukedown files")
-                    for rt, _, files in os.walk(rp):
-                        for f in fnmatch.filter(
-                            [os.path.join(rt, f) for f in files], "*.udn"
-                        ):
-                            self.add_song(f)
+                if rp.is_dir():
+                    logger.debug(f"Scanning dir {rp} for ukedown files")
+                    for sng in rp.rglob("*.udn"):
+                        self.add_song(sng)
             else:
-                self.__log(f"cannot load from non-file/dir {src}", logging.ERROR)
+                logger.error(f"cannot load from non-file/dir {src}")
 
     def collate(self):
         """Reduce contents list to unique entries, indexed on title - artist.
