@@ -4,7 +4,12 @@
 import logging
 import os
 import re
+from pathlib import Path
 from string import punctuation
+
+import jinja2
+
+from .filters import custom_filters
 
 
 def make_dir(destdir: str, logger: logging.Logger | None):
@@ -51,3 +56,30 @@ def safe_filename(filename: str) -> str:
     tt.update({ord("#"): "_sharp_"})
 
     return re.sub(r"_+", r"_", filename.translate(tt))
+
+
+def renderer(templatedir: Path | None = None) -> jinja2.Environment:
+    """Initialise a jinja2 Environment for rendering songsheets.
+
+    This will load templates from a provided path (templatedir),
+    or if this is not provided (or doesn't exist), from the
+    'templates' directory in this package.
+
+    """
+    loaders: list[jinja2.BaseLoader] = [jinja2.PackageLoader("udn_songbook")]
+
+    if templatedir is not None and templatedir.is_dir():
+        loaders.insert(0, jinja2.FileSystemLoader(templatedir))
+
+    jinja_env = jinja2.Environment(
+        loader=jinja2.ChoiceLoader(loaders),
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=True,
+        extensions=["jinja2.ext.do", "jinja2.ext.loopcontrols"],
+    )
+
+    # add our custom filters
+    jinja_env.filters.update(custom_filters)
+
+    return jinja_env
