@@ -3,7 +3,6 @@
 """Class representing a songbook."""
 
 import fnmatch
-import sys
 
 # from jinja2 import Environment, FileSystemLoader
 from collections import OrderedDict
@@ -42,7 +41,7 @@ class SongBook:
         index_template: str = "index.html.j2",
         title: str = "My Songbook",
         profile: str | None = None,
-        style: Path | list[Path] = [],
+        style: list[Path] = [],
         project_settings: Path | None = None,
     ):
         """Create a songbook object from a list of inputs.
@@ -75,9 +74,9 @@ class SongBook:
         #    config(str):        filename for CSS and other configuration
         """
         if isinstance(inputs, list):
-            self._inputs = [Path(i) for i in inputs]
+            self._inputs: list[Path] = [Path(i) for i in inputs]
         else:
-            self._inputs: list[Path] = [Path(inputs)]
+            self._inputs = [Path(inputs)]
 
         # keep track of all the chord diagrams we need for the book
         # these are no longer strings, so `chords` can no longer be a set.
@@ -94,7 +93,6 @@ class SongBook:
         # include a project-specific settings file if there is one.
         self.settings = load_settings(project_settings)
 
-        logger.add(sys.stdout, level="INFO")
         logger.add(Path.cwd() / "songbook.log", level="DEBUG")
 
         if len(self._inputs):
@@ -116,7 +114,7 @@ class SongBook:
             self.chords.extend([c for c in s.chords if c not in self.chords])
             # insert into index
             self._index[s.songid] = s
-            logger.debug(f"Added {path} with id {s.songid}")
+            logger.info(f"Added {path} with id {s.songid}")
         except Exception:
             print("failed to add song", path)
             logger.error(f"failed to add {path}", exc_info=True)
@@ -229,7 +227,7 @@ class SongBook:
 
     @style.setter
     def style(self, data: Path | list[Path]):
-        if isinstance(data, Path):
-            self._style = [data]
-        else:
+        if isinstance(data, list):
             self._style = data
+        else:
+            self._style = [data]
