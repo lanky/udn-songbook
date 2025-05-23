@@ -10,17 +10,20 @@
     <title>{{ book.title }}</title>
     <!-- # also import javascript stuff here if needed -->
 </head>
-<div class="header" id="index_{{ '%02d' | format(index_page) }}">
-    <h1>{{ book.title }} Index</h1>
+  {% if logo %}
+<div class="branding"><img src="images/karauke_logo.png" alt="Karauke Logo - you sing, we play ukulele" /></div>
+  {% endif %}
+  <div class="header" id="index_{{ index_id }}">
+    <h1>{{ book.title }}</h1>
 </div>
 <div class="index">
-    {% for title, song in book.index.items() %}
+    {% for title, song in entries %}
     {% if outfmt == "html" %}
     {% set target='songs/%s'| format(song.filename.with_suffix('.html').name) %}
     {% else %}
     {% set target='#title_%03d'| format(song.id) %}
     {% endif %}
-    <a class="indexlink" id="song_{{ song.id}}" href="{{ target }}" alt="{{ song.title }} - {{ song.artist }}">
+    <a class="indexlink" id="song_{{ song.id }}" href="{{ target }}" alt="{{ song.title }} - {{ song.artist }}">
         {{ song.title }} ({{ song.artist }})
     </a>
     <br />
@@ -28,8 +31,8 @@
 </div>
 <!-- outer div -->
 <div class="footer">
-    {% if index_page > 0 %}
-    <a class="middle" href="index.html">Home</a>
+    {% if page > 0 %}
+    <a class="middle" href="#index_00">Home</a>
     {% endif %}
 </div>
 
