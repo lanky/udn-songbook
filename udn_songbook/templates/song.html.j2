@@ -1,3 +1,4 @@
+{# vim: set ft=jinja :#}
 {% extends "base.html.j2" %}
 {% block title %}
 {{ song.title|default('') }} - {{ song.artist|default('') }}
@@ -31,9 +32,11 @@
 <!-- show_diagrams = {{ show_diagrams }} -->
 {% endif %}
 {% block footer %}
-{% if songbook %}
+{% if navigation %}
+{% if output == "html" %}
   <a class="left" href="{{ song._prev }}" accesskey="p">previous</a>
-  <a class="middle" href="../index.html" accesskey="i">return to index</a>
   <a class="right" href="{{ song._next }}" accesskey="n">next</a>
+{% endif %}
+  <a class="middle" href="{{ index_target|default('../index.html') }}" accesskey="i">return to index</a>
 {% endif %}
 {% endblock %}
