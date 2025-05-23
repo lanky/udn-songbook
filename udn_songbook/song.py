@@ -337,6 +337,7 @@ class Song:
         stylesheet: Path = Path("portrait.css"),
         profile: str | None = None,
         verbose: bool = False,
+        output="html",
         **context,
     ) -> str:
         """Render HTML output using jinja templates.
@@ -388,7 +389,7 @@ class Song:
             environment = renderer()
 
         tpl = environment.get_template(template)
-        return tpl.render(songbook={}, song=self, output="html", **context)
+        return tpl.render(songbook={}, song=self, output=output, **context)
 
     def pdf(
         self,
