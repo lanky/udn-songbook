@@ -8,9 +8,12 @@
 import argparse
 import sys
 from datetime import datetime
+from itertools import batched
 from pathlib import Path
 
 from loguru import logger
+from weasyprint import CSS, HTML  # type: ignore[import-untyped]
+from weasyprint.text.fonts import FontConfiguration  # type: ignore[import-untyped]
 
 from udn_songbook import SongBook
 from udn_songbook.utils import renderer
@@ -72,7 +75,7 @@ def parse_cmdline(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
 
     args = parser.parse_args(argv)
 
-    logger.debug("Ignoring any sources that do not exist.")
+    logger.info("Ignoring any sources that do not exist.")
     args.sources = [s for s in args.sources if s.exists()]
 
     return args
@@ -81,7 +84,18 @@ def parse_cmdline(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
 def main():
     opts = parse_cmdline(sys.argv[1:])
 
-    book = SongBook(inputs=opts.sources)
+    book = SongBook(
+        inputs=opts.sources,
+        title=opts.title,
+        profile=opts.profile,
+        template_paths=opts.templates,
+    )
+
+    profile = book.settings.get(f"profile.{opts.profile}", {})
+
+    book.style = Path(book.styles_dir) / Path(
+        profile.get("stylesheet", "portrait.css")
+    ).with_suffix(".css")
 
     opts.output.parent.mkdir(exist_ok=True, parents=True)
 
@@ -89,10 +103,57 @@ def main():
 
     # load the index template
     idx_tpl = jinja_env.get_template(book.index_template)
-    print(idx_tpl)
 
-    print(book, len(book.index))
-    print(book.settings.as_dict())
+    # let's do the index thing...
+    index_batches = list(batched(book.index.items(), opts.batch))
+
+    # template vars
+    # book
+    # entries
+    # A list of PDF docs rendered from templates
+    docs = []
+    fntc = FontConfiguration()
+    css = [CSS(filename=s, font_config=fntc) for s in book.style]
+    for page, entries in enumerate(index_batches):
+        raw = idx_tpl.render(
+            book=book,
+            entries=entries,
+            index_id=f"{page:02d}",
+            index_count=len(index_batches),
+            output="pdf",
+            page=page,
+            **profile,
+        )
+        doc = HTML(string=raw).render(
+            stylesheets=css,
+            presentational_hints=True,
+            font_config=fntc,
+            optimize_size=("fonts", "images"),
+        )
+
+        docs.append(doc)
+
+    for _name, song in book.index.items():
+        logger.info(f"Processing {_name}")
+        docs.append(
+            song.pdf(
+                profile=opts.profile,
+                environment=jinja_env,
+                index_target="#index_00",
+                navigation=True,
+                output="pdf",
+            )
+        )
+
+    logger.info("Building book")
+    all_pages = [p for d in docs for p in d.pages]
+
+    docs[0].copy(all_pages).write_pdf(
+        target=opts.output,
+        stylesheets=css,
+        presentational_hints=True,
+        optimize_images=True,
+    )
 
 
 if __name__ == "__main__":
