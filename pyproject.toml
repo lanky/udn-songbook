@@ -1,6 +1,6 @@
 [project]
 name = "udn-songbook"
-version = "1.4.3"
+version = "1.4.4"
 description = "songbook and songsheet management for songsheets in ukedown format"
 authors = [{ name = "Stuart Sears", email = "stuart@sjsears.com" }]
 maintainers = [{ name = "Stuart Sears", email = "stuart@sjsears.com" }]
