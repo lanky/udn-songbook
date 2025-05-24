@@ -231,6 +231,10 @@ class Song:
         # strip out any metadata entries from input
         self.__extract_meta(self._markup)
 
+        # this will be the definitive list of tags
+        # for this song object
+        self._tags.update(self._meta.get("tags", []))
+
         # convert remaining markup to HTML
         self.__parse_markup()
 
@@ -515,6 +519,8 @@ class Song:
         else:
             # create a new filename usingtitle and artist
             outfile = Path(f"{self.title} - {self.artist}.udn")
+
+        self._meta["tags"] = list(self._tags)
 
         try:
             with outfile.open("w") as output:
