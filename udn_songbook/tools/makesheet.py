@@ -10,7 +10,9 @@ from pathlib import Path
 from udn_songbook import Song
 
 # so we know which profiles are defined
-from udn_songbook.config import settings
+from udn_songbook.config import load_settings
+
+settings = load_settings()
 
 
 def parse_cmdline(argv: list[str]) -> argparse.Namespace:
