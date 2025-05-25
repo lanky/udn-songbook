@@ -210,7 +210,7 @@ class Song:
                 content.append(line)
         self._markup = "\n".join(content)
         if len(metadata):
-            self._meta = yaml.safe_load("\n".join(metadata))
+            self._meta = yaml.safe_load("\n".join(metadata)) or {}
         else:
             self._meta = {}
 
