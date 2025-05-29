@@ -238,6 +238,14 @@ class Song:
         # convert remaining markup to HTML
         self.__parse_markup()
 
+        # if we override the title (for parsing reasons)
+        # in metadata, use that one.
+        self._title = self._meta.get("title", self._title)
+        self._title_sort = self._meta.get("title_sort", self.title)
+
+        self._artist = self._meta.get("artist", self.artist)
+        self._artist_sort = self._meta.get("artist_sort", self.artist)
+
         # extract chords and positions in text/markup
         self.__parse_chords()
 
@@ -672,6 +680,16 @@ class Song:
     def songid(self):
         """Get string representation in a songbook index."""
         return self._index_entry
+
+    @property
+    def artist_sort(self):
+        """Get the sortable version of the song artist."""
+        return self._artist_sort
+
+    @property
+    def title_sort(self):
+        """Get the sortable version of the song title."""
+        return self._title_sort
 
     @songid.setter
     def songid(self, data):
