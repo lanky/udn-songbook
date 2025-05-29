@@ -18,6 +18,7 @@ dependencies = [
   "platformdirs>=4.3.6",
   "pychord>=1.2.2",
   "pyyaml>=6.0.2",
+  "tqdm>=4.67.1",
   "ukedown>=2.2.2",
   "weasyprint>=65.0",
 ]
