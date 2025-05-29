@@ -6,7 +6,7 @@ import fnmatch
 
 # from jinja2 import Environment, FileSystemLoader
 from collections import OrderedDict
-from operator import itemgetter
+from operator import attrgetter
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -141,9 +141,13 @@ class SongBook:
 
         title and artist must be a unique combination.
         Although we could permit dupes I guess, depending on the book.
+
+        also, sort index by title_sort metadata, if it exists.
         """
+
         self._index = OrderedDict({
-            k: v for (k, v) in sorted(self._index.items(), key=itemgetter(0))
+            s.songid: s
+            for s in sorted(self.contents, key=attrgetter("title_sort", "artist_sort"))
         })
 
     def renumber(self):
