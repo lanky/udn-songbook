@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from pychord import Chord  # type: ignore[import-untyped]
 
 # from glob import glob
+# remove the default logger
+logger.remove()
 
 
 class SongBook:
@@ -93,7 +95,11 @@ class SongBook:
         # include a project-specific settings file if there is one.
         self.settings = load_settings(project_settings)
 
-        logger.add(Path.cwd() / "songbook.log", level="DEBUG")
+        logger.add(
+            Path.cwd() / self.settings.logging.logfile,
+            level=self.settings.logging.loglevel,
+            format=self.settings.logging.logformat,
+        )
 
         if len(self._inputs):
             self.populate()
