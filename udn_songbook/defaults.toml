@@ -40,3 +40,8 @@ singer_notes = true
 credits = true
 capo = true
 stylesheet = "portrait"
+
+[logging]
+logfile = "udn_songbook.log"
+loglevel = "DEBUG"
+logformat = "{time} | {name} | {level} | {message}"
