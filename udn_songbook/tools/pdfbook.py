@@ -12,6 +12,7 @@ from itertools import batched
 from pathlib import Path
 
 from loguru import logger
+from tqdm import tqdm
 from weasyprint import CSS, HTML  # type: ignore[import-untyped]
 from weasyprint.text.fonts import FontConfiguration  # type: ignore[import-untyped]
 
@@ -84,6 +85,8 @@ def parse_cmdline(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
 def main():
     opts = parse_cmdline(sys.argv[1:])
 
+    print(f"* Collating songbook [profile: {opts.profile}]")
+
     book = SongBook(
         inputs=opts.sources,
         title=opts.title,
@@ -114,6 +117,7 @@ def main():
     docs = []
     fntc = FontConfiguration()
     css = [CSS(filename=s, font_config=fntc) for s in book.style]
+    print("* Generating index")
     for page, entries in enumerate(index_batches):
         raw = idx_tpl.render(
             book=book,
@@ -133,8 +137,9 @@ def main():
 
         docs.append(doc)
 
-    for _name, song in book.index.items():
-        logger.info(f"Processing {_name}")
+    print(f"* Rendering {len(book.contents)} songs")
+    for song in tqdm(book.contents, ascii=False, ncols=80):
+        logger.info(f"Processing {song.songid}")
         docs.append(
             song.pdf(
                 profile=opts.profile,
@@ -147,6 +152,8 @@ def main():
 
     logger.info("Building book")
     all_pages = [p for d in docs for p in d.pages]
+
+    print(f"* Writing PDF to {opts.output}")
 
     docs[0].copy(all_pages).write_pdf(
         target=opts.output,
