@@ -11,3 +11,7 @@ dist
 devel/*
 *.pdf
 *.html
+# for stylelint
+node_modules
+package-lock.json
+package.json
