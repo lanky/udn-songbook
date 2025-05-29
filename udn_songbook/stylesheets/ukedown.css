@@ -63,16 +63,19 @@
 }
 
 .singer {
-    font-weight: normal;
-    font-style: italic;
+  font-style: normal;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
-.singer:before {
-    content: "<";
-}
+/* .singer:before { */
 
-.singer:after {
-    content: ">";
+/*  content: "<"; */
+
+/* } */
+
+.singer::after {
+  content: ":";
 }
 
 .repeats {
