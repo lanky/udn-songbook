@@ -117,8 +117,8 @@ p {
 
 /* index page is multi-column */
 .index {
+    column-count: 2;
     column-rule: 1px solid black;
-    columns: 45vw 2;
     margin: auto;
     max-height: 730px;
     padding: 5px;
