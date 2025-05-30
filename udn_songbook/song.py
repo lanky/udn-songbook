@@ -31,7 +31,7 @@ from .config import load_settings
 
 # jinja filters and general utils
 from .filters import custom_filters
-from .utils import renderer, unpunctuate
+from .utils import renderer
 
 # a slightly doctored version of the ukedown chord pattern, which separates
 # '*' (and any other non-standard chord 'qualities' so we can still transpose
@@ -134,7 +134,7 @@ class Song:
             self._filename = Path(f"{self.title}_-_{self.artist}.udn".lower())
 
         if self._index_entry is None:
-            self._index_entry = f"{unpunctuate(self.title)} - {self.artist}"
+            self._index_entry = f"{self.title} - {self.artist}"
 
         self.__checksum()
 
