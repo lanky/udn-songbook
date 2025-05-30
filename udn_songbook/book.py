@@ -151,10 +151,9 @@ class SongBook:
         also, sort index by title_sort metadata, if it exists.
         """
 
-        self._index = OrderedDict({
-            s.songid: s
-            for s in sorted(self.contents, key=attrgetter("title_sort", "artist_sort"))
-        })
+        self.contents.sort(key=attrgetter("title_sort", "artist_sort"))
+
+        self._index = OrderedDict({s.songid: s for s in self.contents})
 
     def renumber(self):
         """Renumber pages in a collated book."""
