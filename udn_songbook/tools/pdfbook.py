@@ -66,8 +66,14 @@ def parse_cmdline(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
         "-b",
         "--batch",
         type=int,
-        default=80,
+        default=100,
         help="Number of index entries per index page.",
+    )
+
+    parser.add_argument(
+        "--index-only",
+        action="store_true",
+        help="Only generate index pages (for testing)",
     )
 
     parser.add_argument(
@@ -137,18 +143,22 @@ def main():
 
         docs.append(doc)
 
-    print(f"* Rendering {len(book.contents)} songs")
-    for song in tqdm(book.contents, ascii=False, ncols=80):
-        logger.info(f"Processing {song.songid}")
-        docs.append(
-            song.pdf(
-                profile=opts.profile,
-                environment=jinja_env,
-                index_target="#index_00",
-                navigation=True,
-                output="pdf",
+    if opts.index_only:
+        print("* Skipping songsheets (--index-only)")
+
+    else:
+        print(f"* Rendering {len(book.contents)} songs")
+        for song in tqdm(book.contents, ascii=False, ncols=80):
+            logger.info(f"Processing {song.songid}")
+            docs.append(
+                song.pdf(
+                    profile=opts.profile,
+                    environment=jinja_env,
+                    index_target="#index_00",
+                    navigation=True,
+                    output="pdf",
+                )
             )
-        )
 
     logger.info("Building book")
     all_pages = [p for d in docs for p in d.pages]
