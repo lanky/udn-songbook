@@ -241,7 +241,7 @@ class Song:
         # if we override the title (for parsing reasons)
         # in metadata, use that one.
         self._title = self._meta.get("title", self._title)
-        self._title_sort = self._meta.get("title_sort", self.title)
+        self._title_sort = self._meta.get("title_sort", self.title).title()
 
         self._artist = self._meta.get("artist", self.artist)
         self._artist_sort = self._meta.get("artist_sort", self.artist)
