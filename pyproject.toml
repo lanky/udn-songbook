@@ -1,6 +1,7 @@
 [project]
 name = "udn-songbook"
-version = "1.4.4"
+# version = "1.4.4"
+dynamic = ["version"]
 description = "songbook and songsheet management for songsheets in ukedown format"
 authors = [{ name = "Stuart Sears", email = "stuart@sjsears.com" }]
 maintainers = [{ name = "Stuart Sears", email = "stuart@sjsears.com" }]
@@ -53,5 +54,13 @@ dev-dependencies = [
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "semver"
+# pattern-prefix = "v"
