@@ -63,4 +63,4 @@ source = "uv-dynamic-versioning"
 [tool.uv-dynamic-versioning]
 vcs = "git"
 style = "semver"
-pattern-prefix = "v"
+# pattern-prefix = "v"
