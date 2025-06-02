@@ -1,6 +1,61 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+## 1.4.5 Github Automations and other improvements
+- move to dynamic tag-based versioning
+- auto-publish on new tag (master only)
+- auto-build on push (all branches)
+- Add --index-only publishing option for testing
+- make title_sort Title Case for sorting appropriately
+- Keep punctuation in songid
+- fix index columns css
+- sort contents, use that to generate index
+- Lots of CSS linting
+- add stylelint configuration
+- Add progress reporting to book pdf creator
+- Support --destdir, use pathlib.Path
+- Add tqdm for book generation tooling
+- Add logging configuration to defaults
+- log to file only in udn_songbook book.py
+- Add .python-version
+- singer names now bold uppercase for accessibility
+- use the new load_settings function
+- Handle empty YAML metadata (e.g. comments-only)
+
+## 1.4.4 No idea how I missed out 1.4.3
+- Add tag management (load/save)
+- rename tooling such that udn_pdfbook -> tools/pdfbook.py
+- clunky but working book building tool
+- Fix footer links in song template for PDF output
+- Fix index ID for links, support batching of entries
+- Add output parameter to HTML method
+- inputs and stylesheets are always lists.
+- rename ukedown_elements to ukedown for simplicity
+- use utils.renderer for jinja2 env in song.py
+
+
+## 1.4.2
+- Support custom settings files
+- Add platformdirs to dependencies
+- whitespace cleanup
+- ruffiness
+- removed requirements.txt
+- updated annotations
+- trailing whitespace
+
+## 1.4.1 Stylesheets and profile updates
+- support stylesheets in profile definitions
+- support singers notes in template
+- allow stylesheet overrides as parameters
+
+## 1.4.0 Template updates
+- patch version upgrade
+- use list not typing.List
+- Update templates to follow ukebook-md
+- sync stylesheets with ukebook-md
+- Add styling for repeat indicators
+
+
 ## 1.3.0
 - Add dynaconf and profile support
 - Docstrings everywhere
