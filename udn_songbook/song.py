@@ -678,11 +678,6 @@ class Song:
         return f"size: {self.fsize}, loaded: {self.loaded}, modified {self.modified}"
 
     @property
-    def songid(self):
-        """Get string representation in a songbook index."""
-        return self._index_entry
-
-    @property
     def artist_sort(self):
         """Get the sortable version of the song artist."""
         return self._artist_sort
@@ -691,6 +686,11 @@ class Song:
     def title_sort(self):
         """Get the sortable version of the song title."""
         return self._title_sort
+
+    @property
+    def songid(self):
+        """Get string representation in a songbook index."""
+        return self._index_entry
 
     @songid.setter
     def songid(self, data):
