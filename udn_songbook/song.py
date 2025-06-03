@@ -93,27 +93,29 @@ class Song:
         self.location: Path = Path(__file__).parent
         self.styles_dir: Path = self.location / "stylesheets"
         self._settings = load_settings()
-        if hasattr(src, "read"):
-            # if we're operating on a filehandle
-            # or another class that implements 'read'
-            self._markup: str = src.read()
-            if hasattr(src, "name"):
-                self._filename: Path | None = Path(src.name)
-            else:
-                self._filename = None
-            self._fsize = len(src.read())
-        elif Path(src).is_file():
+
+        if isinstance(src, Path):
             # did we pass a filename?
             # This is the most common use case
-            self._filename = Path(src)
+            self._filename: Path | None = src
             self.__load(self.filename)
             self._fsize = self.filename.stat().st_size
-            #
-        else:
+        elif isinstance(src, str):
             # presume we've been given content
             self._filename = None
-            self._markup = src  # type: ignore
+            self._markup: str = src
             self._fsize = len(src)  # type: ignore
+        elif isinstance(src, IO) and hasattr(src, "read"):
+            # if we're operating on a filehandle
+            # or another class that implements 'read'
+            self._markup = str(src.read())
+            self._filename = Path(src.name) if hasattr(src, "name") else None
+            self._fsize = len(src.read())
+        else:
+            raise TypeError(
+                "Incompatible data passed to Song. "
+                "Must be a Path, str (content), or a file-like object"
+            )
         # arbitrary metadata, some of which will have meaning
         self._meta: dict[str, Any] = {}
         # tags are separate
