@@ -90,7 +90,6 @@ class Song:
         self._mod_time: datetime.datetime | None = None
         self._index_entry: str | None = None
         self._id: int = 0
-        self._sort_name: str = ""
         self.location: Path = Path(__file__).parent
         self.styles_dir: Path = self.location / "stylesheets"
         self._settings = load_settings()
