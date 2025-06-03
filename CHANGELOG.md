@@ -1,6 +1,13 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+## 1.4.6 type stubs
+- adds py.typed marker
+- refactors input type detection for Song objects
+- raise TypeError for incorrect input types
+- cleanup unused attributes
+- reorder property declarations for readbility
+
 ## 1.4.5 Github Automations and other improvements
 - move to dynamic tag-based versioning
 - auto-publish on new tag (master only)
