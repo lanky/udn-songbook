@@ -11,26 +11,13 @@
   <link rel="stylesheet" type="text/css" href="{{ css_path | default('../css') }}/{{ song.filename.with_suffix('.css').name }}"/>
   {% block localstyles %}
   <style type="text/css">
-  {% if not chords %}
-    .chord { display: none; }
-  {% endif %}
-  {% if not capo -%}
-    .capo { display: none; }
-  {% endif %}
-  {% if not notes %}
-    .notes { display: none; }
-  {% endif %}
-  {% if not diagrams -%}
-    .chords { display: none; }
-    .overflow { display: none; }
-  {% endif %}
-  {% if not singer_notes -%}
-    .singer { display: none; }
-  {% endif %}
+  .chord { display:{%- if chords %} inline; {% else %} none; {% endif %}}
+  .capo { display:{%- if capo %} inline;{% else %} none;{% endif %}}
+  .notes { display:{% if notes %} inline;{% else %} none;{% endif %}}
+  .chords, .overflow { display:{% if diagrams %} flex;{% else %} none;{% endif %}}
+  .singer { display:{%if singer_notes%} inline;{% else %}none;{% endif %}}
   {% if song.meta.font_size %}
-    .content {
-      font-size: {{ song.meta.font_size }};
-  }
+  .content { font-size: {{ song.meta.font_size }}; }
   {% endif %}
   </style>
   {% endblock %}

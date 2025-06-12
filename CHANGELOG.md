@@ -1,6 +1,9 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+## 1.4.7
+- tidy up profile-specific inline CSS
+
 ## 1.4.6 type stubs
 - adds py.typed marker
 - refactors input type detection for Song objects
