@@ -533,19 +533,32 @@ class Song:
 
         try:
             with outfile.open("w") as output:
-                output.write(self._markup)
+                output.write(self.udn())
                 # stick the metadata at the bottom
-                if self._meta is not None:
-                    output.write("\n; # metadata\n")
-                    for line in yaml.safe_dump(
-                        self._meta, default_flow_style=False
-                    ).splitlines():
-                        output.write(f";{line}\n")
                 self._filename = outfile
                 print(f"saved song to {outfile}")
         except OSError as E:
             # switch to logging at some point
             print(f"unable to save {E.filename} - {E.strerror}")
+
+    def udn(self) -> str:
+        """Returns the UDN markup as a string.
+
+        Used by `self.save` but also handy when called via an API.
+        """
+        self._meta["tags"] = list(self._tags)
+        assembled = [self._markup]
+        if self._meta is not None:
+            assembled.append("; # metadata")
+
+            assembled.extend([
+                f"; {line}" for line 
+                in yaml.safe_dump(self._meta, default_flow_style=False).splitlines()
+            ])
+
+        return "\n".join(assembled)
+
+
 
     # Property-based attribute settings - some are read-only in this interface
 
