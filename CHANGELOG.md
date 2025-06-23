@@ -1,6 +1,9 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+## 1.4.8
+- add new Song.udn() method to return UDN content as a string
+
 ## 1.4.7
 - tidy up profile-specific inline CSS
 
