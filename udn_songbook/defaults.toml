@@ -45,3 +45,8 @@ stylesheet = "portrait"
 logfile = "udn_songbook.log"
 loglevel = "DEBUG"
 logformat = "{time} | {name} | {level} | {message}"
+
+[chordtypes]
+addb6 = [0, 4, 7, 8]
+6sus2 = [0, 2, 7, 9]
+"add#11" = [0, 4, 7, 18]

@@ -21,7 +21,7 @@ import markdown
 # HTML processing, rendering and manipulation
 import yaml
 from bs4 import BeautifulSoup as bs
-from pychord import Chord  # type: ignore
+from pychord import Chord, QualityManager  # type: ignore
 
 # PDF rendering
 from weasyprint import CSS, HTML  # type: ignore
@@ -294,6 +294,12 @@ class Song:
             self._chord_locations: nested list of chord, start position, end position
             self._chords: deduplicated chords list, in order of appearence.
         """
+
+        custom_qualities = self._settings.get("chordtypes", {})
+        quality_manager = QualityManager()
+        for q, notes in custom_qualities.items():
+            quality_manager.set_quality(str(q), notes)
+
         # contains chord objects, plus their start and end positions in the text
         chord_locations = []
         # an ordered, deduped list of chords (to manage which diagrams we need)
