@@ -40,6 +40,7 @@ udn_transpose = "udn_songbook.tools.transpose:main"
 udn_songsheet = "udn_songbook.tools.makesheet:main"
 udn_pdfbook = "udn_songbook.tools.pdfbook:main"
 udn_from_ug = "udn_songbook.tools.fromug:main"
+udn_parse_test = "udn_songbook.tools.parse_test:main"
 
 [project.urls]
 Repository = "https://github.com/lanky/udn-songbook"
@@ -47,6 +48,7 @@ Issues = "https://github.com/lanky/udn-songbook/issues"
 
 [tool.uv]
 dev-dependencies = [
+  "ipython>=9.4.0",
   "mypy>=1.15.0",
   "pre-commit>=4.2.0",
   "ruff>=0.11.2",
