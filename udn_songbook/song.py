@@ -295,6 +295,7 @@ class Song:
             self._chords: deduplicated chords list, in order of appearence.
         """
 
+        # allow us to add new chord "qualities" (voicings, really, like 6sus2 or add#11)
         custom_qualities = self._settings.get("chordtypes", {})
         quality_manager = QualityManager()
         for q, notes in custom_qualities.items():
@@ -305,25 +306,28 @@ class Song:
         # an ordered, deduped list of chords (to manage which diagrams we need)
         chordlist = []
 
+        # unparsed chords
+        unparsed = []
+
         # walk over matched chords, convert them and record their locations
         for m in CRDPATT.finditer(self.markup):
             try:
                 crd = Chord(m.groups()[0])
-                tail = m.groups()[1]
-                chord_locations.append([crd, m.end(), tail if tail is not None else ""])
-                if crd not in chordlist:
-                    chordlist.append(crd)
             except ValueError:
-                # raised when this is not a recognised chord
-                print(
-                    f"""Unable to parse chord {m.match} at position {m.start()}
-                        in song {self.filename}"""
-                )
-                raise
+                # we couldn't parse the chord.
+                unparsed.append(m.groups()[0])
+
+            tail = m.groups()[1]
+            chord_locations.append([crd, m.end(), tail if tail is not None else ""])
+            if crd not in chordlist:
+                chordlist.append(crd)
 
         # set attributes so we can access these elsewhere
         self._chord_locations = chord_locations
         self._chords = chordlist
+        self._unknown_chords = unparsed
+        if len(unparsed):
+            print(f"could not parse these chord names: {', '.join(unparsed)}")
 
     def __get_render_env(self, templatedir: str = "") -> jinja2.Environment:
         """Initialise a jinja2 Environment for rendering songsheets.
@@ -558,13 +562,13 @@ class Song:
             assembled.append("; # metadata")
 
             assembled.extend([
-                f"; {line}" for line 
-                in yaml.safe_dump(self._meta, default_flow_style=False).splitlines()
+                f"; {line}"
+                for line in yaml.safe_dump(
+                    self._meta, default_flow_style=False
+                ).splitlines()
             ])
 
         return "\n".join(assembled)
-
-
 
     # Property-based attribute settings - some are read-only in this interface
 
