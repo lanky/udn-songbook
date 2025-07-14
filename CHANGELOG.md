@@ -1,6 +1,14 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+
+## 1.4.9
+- still record unparseable chords
+- support customisable chord types (qualities) in settings
+- add UG conversion tool
+- add UDN file parse testing tool
+- disable transposition if any unknown chords 
+
 ## 1.4.8
 - add new Song.udn() method to return UDN content as a string
 
