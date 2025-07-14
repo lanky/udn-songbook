@@ -495,6 +495,9 @@ class Song:
             semitones(int): number of semitones to transpose by
                 negative to tranpose down
         """
+        # cannot transpose if we have unknown chords
+        if len(self._unknown_chords):
+            return
         # take a copy to transpose, as the transposition is an in-place
         # alteration of chord objects
         tmkup = io.StringIO(self._markup)
