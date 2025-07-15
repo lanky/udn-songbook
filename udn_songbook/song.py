@@ -313,14 +313,16 @@ class Song:
         for m in CRDPATT.finditer(self.markup):
             try:
                 crd = Chord(m.groups()[0])
+                if crd not in chordlist:
+                    chordlist.append(crd)
             except ValueError:
                 # we couldn't parse the chord.
-                unparsed.append(m.groups()[0])
+                crd = m.groups()[0]
+                if crd not in unparsed:
+                    unparsed.append(m.groups()[0])
 
             tail = m.groups()[1]
             chord_locations.append([crd, m.end(), tail if tail is not None else ""])
-            if crd not in chordlist:
-                chordlist.append(crd)
 
         # set attributes so we can access these elsewhere
         self._chord_locations = chord_locations
