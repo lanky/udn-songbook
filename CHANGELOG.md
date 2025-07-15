@@ -2,6 +2,9 @@
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.5.0
+- separate pychord.Chord and string chord representations.
+
 ## 1.4.9
 - still record unparseable chords
 - support customisable chord types (qualities) in settings
