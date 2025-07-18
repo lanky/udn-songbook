@@ -7,7 +7,7 @@ authors = [{ name = "Stuart Sears", email = "stuart@sjsears.com" }]
 maintainers = [{ name = "Stuart Sears", email = "stuart@sjsears.com" }]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
   "beautifulsoup4>=4.13.3",
   "dynaconf>=3.2.10",

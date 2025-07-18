@@ -2,6 +2,9 @@
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.5.1
+lower python requirement to >= 3.11
+
 ## 1.5.0
 - separate pychord.Chord and string chord representations.
 
