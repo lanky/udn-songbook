@@ -47,6 +47,15 @@ loglevel = "DEBUG"
 logformat = "{time} | {name} | {level} | {message}"
 
 [chordtypes]
+# these are semitones from root(0) upwards
+# in a major scale, intervals would be 0,2,4,5,7,9,11
+# so 0, 4, 7, 8 is actually 1,3,5,b6 in scale tones.
+# mapping the C major scale as an example:
+# interval: 0 1  2 3  4 5 6  7 8  9 10 11 12
+# note:     C C# D Eb E F F# G G# A Bb B  C
+# scale:    1    2    3 4    5    6    7  8
+# so major (1, 3, 5) -> (0, 4, 7). Weird, huh?
 addb6 = [0, 4, 7, 8]
 6sus2 = [0, 2, 7, 9]
+7sus2 = [0, 2, 7, 10]
 "add#11" = [0, 4, 7, 18]
