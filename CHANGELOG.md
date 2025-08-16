@@ -2,6 +2,10 @@
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
 
+## 1.5.2
+- add 7sus2 chord type
+- fix f-string error in makesheet
+
 ## 1.5.1
 lower python requirement to >= 3.11
 
