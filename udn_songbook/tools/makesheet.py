@@ -17,6 +17,7 @@ settings = load_settings()
 
 def parse_cmdline(argv: list[str]) -> argparse.Namespace:
     """Process commandline options and arguments, provide help."""
+    jstr = "\n - "
 
     preamble = f"""
 Generates a PDF or HTML songsheet from a UDN input file
@@ -30,7 +31,7 @@ Profiles can be used to define common output formats
 Profiles are defined in TOML files and merged.
 
 Currently discovered config files:
-  - {"\n  - ".join([str(f) for f in settings.settings_file])}
+  - {jstr.join([str(f) for f in settings.settings_file])}
     """
 
     parser = argparse.ArgumentParser(
