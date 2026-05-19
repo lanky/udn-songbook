@@ -5,8 +5,8 @@ from platformdirs import PlatformDirs
 
 # use system-specific paths for default configs
 DEFAULT_SETTINGS_FILES = [
-    PlatformDirs("udn_songbook").user_config_path / "settings.toml",
     Path(__file__).parent / "defaults.toml",
+    PlatformDirs("udn_songbook").user_config_path / "settings.toml",
 ]
 
 
