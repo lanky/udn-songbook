@@ -45,6 +45,7 @@ class SongBook:
         profile: str | None = None,
         style: list[Path] = [],
         project_settings: Path | None = None,
+        family_friendly: bool = False,
     ):
         """Create a songbook object from a list of inputs.
 
@@ -94,6 +95,8 @@ class SongBook:
         self._styles_dir = Path(__file__).parent / "stylesheets"
         # include a project-specific settings file if there is one.
         self.settings = load_settings(project_settings)
+        self.family_friendly = family_friendly
+        self.profile = profile
 
         logger.add(
             Path.cwd() / self.settings.logging.logfile,
@@ -113,7 +116,9 @@ class SongBook:
             songdata(str): path to a file (usually)
         """
         try:
-            s = Song(path, template=self.song_template)
+            s = Song(
+                path, template=self.song_template, family_friendly=self.family_friendly
+            )
             # add the song object to our content list
             self.contents.append(s)
             # add the chords it uses to our chords list
