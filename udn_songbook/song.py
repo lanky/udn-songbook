@@ -21,11 +21,11 @@ import markdown
 # HTML processing, rendering and manipulation
 import yaml
 from bs4 import BeautifulSoup as bs
-from pychord import Chord, QualityManager  # type: ignore
+from pychord import Chord, QualityManager
 
 # PDF rendering
-from weasyprint import CSS, HTML  # type: ignore
-from weasyprint.text.fonts import FontConfiguration  # type: ignore
+from weasyprint import CSS, HTML
+from weasyprint.text.fonts import FontConfiguration
 
 from .config import load_settings
 
@@ -104,7 +104,7 @@ class Song:
             # presume we've been given content
             self._filename = None
             self._markup: str = src
-            self._fsize = len(src)  # type: ignore
+            self._fsize = len(src)
         elif isinstance(src, IO) and hasattr(src, "read"):
             # if we're operating on a filehandle
             # or another class that implements 'read'
