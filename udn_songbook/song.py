@@ -275,12 +275,13 @@ class Song:
         soup = bs(raw_html, features="lxml")
 
         # extract our sole H1 tag, which should be the title - artist string
-        hdr = soup.h1.extract()
+        if h1 := soup.h1:
+            hdr = h1.extract()
         try:
             title, artist = (i.strip() for i in hdr.text.split("-", 1))
         except ValueError:
             title = hdr.text.strip()
-            artist = None
+            artist = "Unknown Artist"
 
         # remove the header from our document
         hdr.decompose()
@@ -290,7 +291,8 @@ class Song:
         self._artist = artist
 
         # add processed body text (with headers etc converted)
-        self.body = "".join([str(x) for x in soup.body.contents]).strip()
+        if body := soup.body:
+            self.body = "".join([str(x) for x in body.contents]).strip()
 
     def __parse_chords(self):
         """Extract the chords from markup, not HTML.
@@ -330,7 +332,12 @@ class Song:
                     unparsed.append(m.groups()[0])
 
             tail = m.groups()[1]
-            chord_locations.append([crd, m.end(), tail if tail is not None else ""])
+            # so crd is Chord | str, end is int
+            chord_locations.append([
+                crd,
+                int(m.end()),
+                tail if tail is not None else "",
+            ])
 
         # set attributes so we can access these elsewhere
         self._chord_locations = chord_locations
