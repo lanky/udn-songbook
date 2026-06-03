@@ -59,3 +59,12 @@ addb6 = [0, 4, 7, 8]
 6sus2 = [0, 2, 7, 9]
 7sus2 = [0, 2, 7, 10]
 "add#11" = [0, 4, 7, 18]
+
+[swearing]
+fucking = "forgetting"
+fuck = "forget"
+shit = "shoot"
+nigger = "trigger"
+nigga = "trigger"
+cunt = "punt"
+wank = "spank"
