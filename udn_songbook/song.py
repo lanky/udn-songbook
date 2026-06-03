@@ -123,7 +123,7 @@ class Song:
         # tags are separate
         self._tags: set[str] = set([])
 
-        self.__parse(markup=self._markup)
+        self.__parse(markup=self._markup, **kwargs)
 
         # set a default template (loaded from this package) if one was not provided
         # (e.g. from a songbook containing this song)
@@ -173,7 +173,7 @@ class Song:
             print(f"Unable to open input file {E.filename} ({E.strerror}")
             self._markup = ""
 
-    def __checksum(self):
+    def __checksum(self) -> None:
         """Generate sha256 checksum of loaded content.
 
         intended to use for change detection
@@ -185,7 +185,7 @@ class Song:
         shasum.update(self._markup.encode("utf-8"))
         self._checksum = shasum.hexdigest()
 
-    def __extract_meta(self, markup: str | None = None, leader: str = ";"):
+    def __extract_meta(self, markup: str | None = None, leader: str = ";") -> None:
         """Parse out metadata from file.
 
         This MUST be done before passing to markdown
@@ -385,7 +385,7 @@ class Song:
         self,
         environment: jinja2.Environment | None = None,
         template: str = "song.html.j2",
-        stylesheet: Path = Path("portrait.css"),
+        stylesheet: Path | str = Path("portrait.css"),
         profile: str | None = None,
         verbose: bool = False,
         output="html",
@@ -409,11 +409,13 @@ class Song:
             ctx = self._settings.get(f"profile.{profile}", {})
             context.update(ctx)
 
-        if stylesheet is None:
-            stylesheet = Path(context.get("stylesheet", "portrait.css")).with_suffix(
-                ".css"
-            )
-        else:
+        # if stylesheet is None:
+        #     stylesheet = Path(context.get("stylesheet", "portrait.css")).with_suffix(
+        #         ".css"
+        #     )
+        # else:
+        #     stylesheet = Path(stylesheet).with_suffix(".css")
+        if isinstance(stylesheet, str):
             stylesheet = Path(stylesheet).with_suffix(".css")
 
         if stylesheet.exists():
@@ -425,15 +427,15 @@ class Song:
         else:
             print(self.styles_dir)
             print(f"Cannot find stylesheet {stylesheet}")
-            sys.exit(2)
+            print(f"using {context['stylesheet']}")
 
         if verbose:
             print("Rendering Context:")
             print(context)
 
         # use the passed template, if not fall back to the default
-        if template is None:
-            template = self.template
+        # if template is None:
+        #     template = self.template
         # There are prettier ways to do this but this is simple and readable
         # if we provide a jinja environment (e.g. from a parent songbook), use it
         if environment is None:
@@ -478,10 +480,10 @@ class Song:
             ctx = self._settings.get(f"profile.{profile}", {})
             context.update(ctx)
 
-        if stylesheet is None:
-            stylesheet = Path(context.get("stylesheet", "portrait.css"))
-        else:
-            stylesheet = Path(stylesheet)
+        # if stylesheet is None:
+        #     stylesheet = Path(context.get("stylesheet", "portrait.css"))
+        # else:
+        #     stylesheet = Path(stylesheet)
         # try the stylesheet provided, as follows:
         # load it as an absolute path
         # load it from the included stylesheets
@@ -532,7 +534,8 @@ class Song:
         transposed = []
         for crd, end, tail in self._chord_locations:
             # change the chord in place
-            crd.transpose(semitones)
+            if isinstance(crd, Chord):
+                crd.transpose(semitones)
             # read the section of the markup that contains it
             # and insert the new transposed version
             transposed.append(
