@@ -84,6 +84,7 @@ class Song:
                              can be overridden at the songbook level
             id(int):         page number, used as part of the "id" attribute on
                              headers
+            family_friendly(bool): replace swearwords
         """
         self._checksum: str | None = None
         self._load_time: datetime.datetime = datetime.datetime.now()
@@ -93,6 +94,7 @@ class Song:
         self.location: Path = Path(__file__).parent
         self.styles_dir: Path = self.location / "stylesheets"
         self._settings = load_settings()
+        self.family_friendly: bool = kwargs.pop("family_friendly", False)
 
         if isinstance(src, Path):
             # did we pass a filename?
@@ -232,6 +234,12 @@ class Song:
         # strip out any metadata entries from input
         self.__extract_meta(self._markup)
 
+        if self.family_friendly:
+            self.__cleanup()
+
+        if kwargs:
+            self._meta.update(kwargs)
+
         # this will be the definitive list of tags
         # for this song object
         self._tags.update(self._meta.get("tags", []))
@@ -354,6 +362,17 @@ class Song:
         jinja_env.filters.update(custom_filters)
 
         return jinja_env
+
+    def __cleanup(self):
+        """The family-friendly cleanup. Based on replacements in a songs metadata
+
+        or a central list of naught works from settings.
+        """
+        mappings = self._settings.get("swearing", {})
+        mappings.update(self._meta.get("swearing", {}))
+        if mappings:
+            for word, replacement in mappings.items():
+                self._markup = re.sub(rf"\b{word}\b", replacement, self._markup)
 
     def html(
         self,
