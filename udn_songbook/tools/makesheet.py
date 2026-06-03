@@ -65,6 +65,12 @@ Currently discovered config files:
         default=False,
         help="overwrite in-place rather than renaming existing output files",
     )
+    parser.add_argument(
+        "--family-friendly",
+        action="store_true",
+        default=False,
+        help="Replace naughty words wirth more acceptable ones",
+    )
 
     parser.add_argument(
         "-v",
@@ -153,7 +159,7 @@ def main():
     """
     opts = parse_cmdline(sys.argv[1:])
 
-    song = Song(opts.filename)
+    song = Song(opts.filename, family_friendly=opts.family_friendly)
 
     profile = settings.get(f"profiles.{opts.profile}", {})
 

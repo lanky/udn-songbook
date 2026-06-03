@@ -45,6 +45,11 @@ def parse_cmdline(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
         help="Book profile to generate, these are defined in `defaults.toml` "
         "in the udn-songbook installation dir, or in your songbook source dirs.",
     )
+    parser.add_argument(
+        "--family-friendly",
+        action="store_true",
+        help="Cleanup sweary words in songs",
+    )
 
     parser.add_argument(
         "-o",
@@ -98,6 +103,7 @@ def main():
         title=opts.title,
         profile=opts.profile,
         template_paths=opts.templates,
+        family_friendly=opts.family_friendly,
     )
 
     profile = book.settings.get(f"profile.{opts.profile}", {})
