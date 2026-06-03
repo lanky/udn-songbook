@@ -1,6 +1,19 @@
 # CHANGELOG for udn_songbook
 
 This project attempts to adhere to [semantic versioning](https://semver.org)
+## 1.5.6
+Add support for family-friendly, with word replacements in settings and in UDN sheet metadata
+Add better content checking (linting/type checking)
+
+## 1.5.4
+re-order settings file parsing for inheritance
+remove python version lock
+
+## 1.5.3
+Update packaging workflow
+
+## 1.5.2
+Add classifiers for pypi
 
 ## 1.5.1
 lower python requirement to >= 3.11
