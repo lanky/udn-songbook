@@ -117,7 +117,9 @@ class SongBook:
         """
         try:
             s = Song(
-                path, template=self.song_template, family_friendly=self.family_friendly
+                path,
+                template=self.song_template,
+                family_friendly=self.family_friendly,
             )
             # add the song object to our content list
             self.contents.append(s)
