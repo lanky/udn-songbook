@@ -23,6 +23,15 @@ credits = false
 capo = false
 stylesheet = "portrait"
 
+[profile.karauke_ls]
+diagrams = false
+notes = true
+chords = true
+singer_notes = false
+credits = false
+capo = false
+stylesheet = "landscape"
+
 [profile.singer]
 diagrams = false
 notes = false
@@ -31,6 +40,15 @@ singer_notes = true
 credits = false
 capo = false
 stylesheet = "portrait"
+
+[profile.singer_ls]
+diagrams = false
+notes = false
+chords = false
+singer_notes = true
+credits = false
+capo = false
+stylesheet = "landscape"
 
 [profile.weds]
 diagrams = true
